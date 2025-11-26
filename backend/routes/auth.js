@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const crypto = require('crypto');
 
 function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,6 +52,49 @@ router.post('/register', async (req, res) => {
     console.error('Register error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
+});
+
+// POST /api/login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: 'Champs requis manquants' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Identifiants invalides' });
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ message: 'Identifiants invalides' });
+
+    // Mini JWT-like token signé (pas besoin de dépendance supplémentaire)
+    const payload = { id: user._id.toString(), roles: user.roles, iat: Math.floor(Date.now() / 1000) };
+    const secret = process.env.JWT_SECRET || 'dev-secret';
+    const base = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const sig = crypto.createHmac('sha256', secret).update(base).digest('base64url');
+    const token = `${base}.${sig}`;
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 1000 * 60 * 60 // 1h
+    });
+
+    return res.json({ message: 'Authentifié' });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict'
+  });
+  return res.json({ message: 'Déconnecté' });
 });
 
 module.exports = router;
