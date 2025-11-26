@@ -66,21 +66,22 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ message: 'Identifiants invalides' });
 
-    // Mini JWT-like token signé (pas besoin de dépendance supplémentaire)
     const payload = { id: user._id.toString(), roles: user.roles, iat: Math.floor(Date.now() / 1000) };
     const secret = process.env.JWT_SECRET || 'dev-secret';
     const base = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const sig = crypto.createHmac('sha256', secret).update(base).digest('base64url');
     const token = `${base}.${sig}`;
 
+    // set cookie 
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',
+      path: '/',
       maxAge: 1000 * 60 * 60 // 1h
     });
 
-    return res.json({ message: 'Authentifié' });
+    return res.status(200).json({ message: 'Authentifié' });
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -92,9 +93,10 @@ router.post('/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict'
+    sameSite: 'Strict',
+    path: '/'
   });
-  return res.json({ message: 'Déconnecté' });
+  return res.status(200).json({ message: 'Déconnecté' });
 });
 
 module.exports = router;
