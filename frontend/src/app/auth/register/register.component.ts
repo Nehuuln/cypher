@@ -21,14 +21,48 @@ export class RegisterComponent {
 
     constructor(private http: HttpClient, private router: Router) {}
 
+    private validateInputs(): boolean {
+        this.error = null;
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.email)) {
+            this.error = 'Email invalide.';
+            return false;
+        }
+
+        if (this.password !== this.confirmPassword) {
+            this.error = 'Les mots de passe ne correspondent pas.';
+            return false;
+        }
+
+        if (!this.password || this.password.length < 12) {
+            this.error = 'Le mot de passe doit contenir au moins 12 caractères.';
+            return false;
+        }
+
+        let classes = 0;
+        if (/[A-Z]/.test(this.password)) classes++;
+        if (/[a-z]/.test(this.password)) classes++;
+        if (/\d/.test(this.password)) classes++;
+        if (/[^A-Za-z0-9]/.test(this.password)) classes++;
+
+        if (classes < 3) {
+            this.error = 'Le mot de passe doit contenir au moins 3 types de caractères : majuscules, minuscules, chiffres, caractères spéciaux.';
+            return false;
+        }
+
+        return true;
+    }
+
     register() {
         this.error = null;
+
         if (!this.username || !this.email || !this.password) {
             this.error = 'Veuillez remplir tous les champs.';
             return;
         }
-        if (this.password !== this.confirmPassword) {
-            this.error = 'Les mots de passe ne correspondent pas.';
+
+        if (!this.validateInputs()) {
             return;
         }
 
@@ -39,12 +73,10 @@ export class RegisterComponent {
                 this.loading = false;
                 this.successMessage = 'Inscription réussie ! Redirection vers la page de connexion...';
                 this.error = null;
-                // optionnel: vider le formulaire
                 this.username = '';
                 this.email = '';
                 this.password = '';
                 this.confirmPassword = '';
-                // rediriger après 2s
                 setTimeout(() => {
                     this.router.navigate(['/login']);
                 }, 2000);
@@ -53,6 +85,9 @@ export class RegisterComponent {
                 this.loading = false;
                 if (err?.status === 409) {
                     this.error = 'Nom d\'utilisateur ou e-mail déjà utilisé.';
+                } else if (err?.status === 400 && err?.error?.message) {
+                    // show server validation message
+                    this.error = err.error.message;
                 } else if (err?.error?.message) {
                     this.error = err.error.message;
                 } else {
