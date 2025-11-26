@@ -17,6 +17,7 @@ export class RegisterComponent {
     confirmPassword: string = '';
     error: string | null = null;
     loading = false;
+    successMessage: string | null = null;
 
     constructor(private http: HttpClient, private router: Router) {}
 
@@ -36,7 +37,17 @@ export class RegisterComponent {
         this.http.post<any>('http://localhost:3000/api/register', payload).subscribe({
             next: (res) => {
                 this.loading = false;
-                this.router.navigate(['/login']);
+                this.successMessage = 'Inscription réussie ! Redirection vers la page de connexion...';
+                this.error = null;
+                // optionnel: vider le formulaire
+                this.username = '';
+                this.email = '';
+                this.password = '';
+                this.confirmPassword = '';
+                // rediriger après 2s
+                setTimeout(() => {
+                    this.router.navigate(['/login']);
+                }, 2000);
             },
             error: (err) => {
                 this.loading = false;
