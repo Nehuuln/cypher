@@ -71,11 +71,11 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 - [X] **Stockage du rôle en base de données**
   - Colonne `role` ou `roles` dans la table `users`
 
-- [ ] **Au moins une page/fonctionnalité Admin-only**
+- [X] **Au moins une page/fonctionnalité Admin-only**
   - `/admin/dashboard` visible SEULEMENT pour Admin
   - Ou : `/admin/users` pour gérer les utilisateurs
 
-- [ ] **Vérification côté serveur** (pas juste front-end)
+- [X] **Vérification côté serveur** (pas juste front-end)
   - Tentative accès `/admin` en tant qu'User → **Rejet (403 ou Redirect)**
   - Code serveur vérifie `if (user.role !== 'ADMIN') { deny(); }`
 

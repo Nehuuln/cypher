@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const adminRouter = require('./routes/admin');
+const usersRouter = require('./routes/users')
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.options('*', cors(corsOptions)); // pour préflight OPTIONS
 app.use(cookieParser());
 app.use(express.json());
 app.use('/api/admin', adminRouter);
+app.use('/api/users', usersRouter);
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGODB_URI;

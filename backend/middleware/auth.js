@@ -74,5 +74,28 @@ function adminOnly(req, res, next) {
   }
 }
 
+// --- NEW: ensureSameUserOrAdmin middleware ---
+function ensureSameUserOrAdmin(req, res, next) {
+  try {
+    const payload = req.user;
+    if (!payload) return res.status(401).json({ message: 'Unauthorized' });
+    const roles = Array.isArray(payload.roles) ? payload.roles : [];
+    const isAdmin = roles.some(r => String(r).toLowerCase() === 'admin' || String(r).toLowerCase() === 'administrator');
+
+    // prefer param id, fallback to body or query
+    const requestedId = req.params?.id || req.body?.id || req.query?.id;
+    if (!requestedId) return res.status(400).json({ message: 'Missing user id' });
+
+    if (String(payload.id) === String(requestedId) || isAdmin) {
+      return next();
+    }
+    return res.status(403).json({ message: 'Forbidden' });
+  } catch (err) {
+    console.error('ensureSameUserOrAdmin error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
 module.exports = authMiddleware;
 module.exports.adminOnly = adminOnly;
+module.exports.ensureSameUserOrAdmin = ensureSameUserOrAdmin;
