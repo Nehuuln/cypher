@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const crypto = require('crypto');
+const authMiddleware = require('../middleware/auth');
 
 function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,7 +79,7 @@ router.post('/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',
       path: '/',
-      maxAge: 1000 * 60 * 60 // 1h
+      maxAge: 1000 * 60 * 1 // 30 minutes
     });
 
     return res.status(200).json({ message: 'Authentifié' });
@@ -97,6 +98,20 @@ router.post('/logout', (req, res) => {
     path: '/'
   });
   return res.status(200).json({ message: 'Déconnecté' });
+});
+
+// Protected route example
+router.get('/me', authMiddleware, async (req, res) => {
+  // req.user is set by middleware
+  const { id } = req.user || {};
+  try {
+    const user = await User.findById(id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json({ user });
+  } catch (err) {
+    console.error('GET /me error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
 });
 
 module.exports = router;
