@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent {
   error: string | null = null;
   loading = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   login() {
     this.error = null;
@@ -25,7 +26,7 @@ export class LoginComponent {
       return;
     }
     this.loading = true;
-    this.http.post<any>('http://localhost:3000/api/login', { email: this.email, password: this.password }, { withCredentials: true }).subscribe({
+    this.auth.login(this.email, this.password).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/']);

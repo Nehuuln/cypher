@@ -1,8 +1,11 @@
 <nav>
     <div class="nav-wrapper teal">
         <a href="#" class="brand-logo center">Cypher</a>
+            <div class="user-info" *ngIf="username">
+                Bonjour, {{ username }}
+            </div>
     </div>
     
 </nav>
-<button (click)="logout()">Se déconnecter</button>
+<button *ngIf="username" (click)="logout()">Se déconnecter</button>
 <router-outlet />

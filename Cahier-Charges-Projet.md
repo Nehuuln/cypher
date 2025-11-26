@@ -25,29 +25,29 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Page d'inscription (`/register`)**
+- [X] **Page d'inscription (`/register`)**
   - Champs : Email, Mot de passe, Nom
   - Validation :
     - Email : Format valide (regex ou libraire)
     - Mot de passe : Minimum 12 caractères + 3 types (majuscules, minuscules, chiffres, spéciaux)
   - Message d'erreur explicite si validation échoue
 
-- [ ] **Page de connexion (`/login`)**
+- [X] **Page de connexion (`/login`)**
   - Email + Mot de passe
   - Validation d'identité côté serveur
   - Message d'erreur générique en cas d'échec (pas "email pas trouvé" ou "mot de passe incorrect")
 
-- [ ] **Stockage sécurisé des mots de passe**
+- [X] **Stockage sécurisé des mots de passe**
   - Hachage avec `bcrypt`, `Argon2` ou `PBKDF2`
   - **Interdiction absolue** : MD5, SHA1, SHA256 simple, ou texte clair
   - Vérifiable : Query `SELECT password FROM users LIMIT 1` montre un hash
 
-- [ ] **Session & Cookies**
+- [X] **Session & Cookies**
   - Authentification avec session serveur (ou JWT si API)
   - Cookies avec attributs `HttpOnly`, `Secure`, `SameSite=Strict`
   - Timeout après 15-30 min d'inactivité
 
-- [ ] **Page de déconnexion (`/logout`)**
+- [X] **Page de déconnexion (`/logout`)**
   - Détruit vraiment la session côté serveur
   - Redirection vers login
 
