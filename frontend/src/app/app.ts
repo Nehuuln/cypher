@@ -12,10 +12,13 @@ import { AuthService } from './auth/auth.service';
 export class App {
   protected readonly title = signal('frontend');
   username: string | null = null;
+  isAdmin = false;
 
   constructor(private auth: AuthService, private router: Router) {
     this.auth.currentUser$.subscribe((user) => {
       this.username = user?.username ?? null;
+      const roles = Array.isArray(user?.roles) ? user.roles : [];
+      this.isAdmin = roles.some((role: string) => String(role).toLowerCase() === 'admin');
     });
     this.auth.me().subscribe({ error: () => {} });
   }

@@ -1,11 +1,13 @@
 <nav>
     <div class="nav-wrapper teal">
         <a href="#" class="brand-logo center">Cypher</a>
-            <div class="user-info" *ngIf="username">
-                Bonjour, {{ username }}
-            </div>
+        <div class="user-info" *ngIf="username">
+            Bonjour, {{ username }}
+        </div>
+        <a href="/admin/dashboard" *ngIf="isAdmin" class="float-end btn btn-sm btn-outline-light">Dashboard</a>
+        <button *ngIf="username" (click)="logout()" class="btn btn-sm btn-outline-light">Se déconnecter</button>
     </div>
-    
+
 </nav>
-<button *ngIf="username" (click)="logout()">Se déconnecter</button>
+
 <router-outlet />

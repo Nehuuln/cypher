@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 // Verify token from cookie and implement sliding expiration
-module.exports = function authMiddleware(req, res, next) {
+function authMiddleware(req, res, next) {
   try {
     const token = req.cookies && req.cookies.token;
     if (!token) return res.status(401).json({ message: 'Unauthorized' });
@@ -59,3 +59,20 @@ module.exports = function authMiddleware(req, res, next) {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+function adminOnly(req, res, next) {
+  try {
+    const payload = req.user;
+    if (!payload) return res.status(401).json({ message: 'Unauthorized' });
+    const roles = Array.isArray(payload.roles) ? payload.roles : [];
+    const isAdmin = roles.some(r => String(r).toLowerCase() === 'admin' || String(r).toLowerCase() === 'administrator');
+    if (!isAdmin) return res.status(403).json({ message: 'Forbidden' });
+    next();
+  } catch (err) {
+    console.error('adminOnly error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = authMiddleware;
+module.exports.adminOnly = adminOnly;

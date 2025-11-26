@@ -63,12 +63,12 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Au minimum 2 rôles différents** dans le système
+- [X] **Au minimum 2 rôles différents** dans le système
   - Exemple 1 : `USER` et `ADMIN`
   - Exemple 2 : `AUTHOR`, `EDITOR`, `VIEWER`
   - Exemple 3 : `MANAGER`, `EMPLOYEE`
 
-- [ ] **Stockage du rôle en base de données**
+- [X] **Stockage du rôle en base de données**
   - Colonne `role` ou `roles` dans la table `users`
 
 - [ ] **Au moins une page/fonctionnalité Admin-only**
