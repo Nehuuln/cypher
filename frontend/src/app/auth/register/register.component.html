@@ -3,22 +3,28 @@
   <form (ngSubmit)="register()">
     <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
     <div *ngIf="!successMessage">
-    <div>
-      <label>Nom d'utilisateur</label>
-      <input name="username" [(ngModel)]="username" required />
-    </div>
-    <div>
-      <label>Email</label>
-      <input name="email" type="email" [(ngModel)]="email" required />
-    </div>
-    <div>
-      <label>Mot de passe</label>
-      <input name="password" type="password" [(ngModel)]="password" required />
-    </div>
-    <div>
-      <label>Confirmer le mot de passe</label>
-      <input name="confirmPassword" type="password" [(ngModel)]="confirmPassword" required />
-    </div>
+      <div>
+        <label>Nom d'utilisateur</label>
+        <input name="username" [(ngModel)]="username" required />
+      </div>
+      <div>
+        <label>Email</label>
+        <input name="email" type="email" [(ngModel)]="email" required />
+      </div>
+      <div>
+        <label>Mot de passe</label>
+        <input name="password" type="password" [(ngModel)]="password" required />
+      </div>
+      <div>
+        <label>Confirmer le mot de passe</label>
+        <input name="confirmPassword" type="password" [(ngModel)]="confirmPassword" required />
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" name="consent" [(ngModel)]="consent" required />
+          J'accepte que mes données soient utilisées pour l'inscription et la gestion de mon compte.
+        </label>
+      </div>
 
       <div *ngIf="error" class="error">{{ error }}</div>
 

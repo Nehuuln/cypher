@@ -33,9 +33,14 @@ function validatePasswordPolicy(password) {
 // POST /api/register
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, consent } = req.body;
+
     if (!username || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    if (!consent) {
+      return res.status(400).json({ message: "Consentement requis pour l'inscription" });
     }
 
     if (!validateEmail(email)) {

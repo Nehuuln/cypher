@@ -15,6 +15,7 @@ export class RegisterComponent {
     email: string = '';
     password: string = '';
     confirmPassword: string = '';
+    consent: boolean = false;
     error: string | null = null;
     loading = false;
     successMessage: string | null = null;
@@ -62,12 +63,17 @@ export class RegisterComponent {
             return;
         }
 
+        if (!this.consent) {
+            this.error = 'Vous devez accepter l\'utilisation de vos données pour poursuivre.';
+            return;
+        }
+
         if (!this.validateInputs()) {
             return;
         }
 
         this.loading = true;
-        const payload = { username: this.username, email: this.email, password: this.password };
+        const payload = { username: this.username, email: this.email, password: this.password, consent: this.consent };
         this.http.post<any>('http://localhost:3000/api/register', payload).subscribe({
             next: (res) => {
                 this.loading = false;
@@ -77,6 +83,7 @@ export class RegisterComponent {
                 this.email = '';
                 this.password = '';
                 this.confirmPassword = '';
+                this.consent = false;
                 setTimeout(() => {
                     this.router.navigate(['/login']);
                 }, 2000);
