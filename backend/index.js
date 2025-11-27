@@ -20,21 +20,33 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // pour préflight OPTIONS
+app.options('*', cors(corsOptions)); 
 app.use(cookieParser());
 app.use(express.json());
 app.use('/api/admin', adminRouter);
 app.use('/api/users', usersRouter);
 
-// Connect to MongoDB
+// MongoDB connection and server start
 const mongoUri = process.env.MONGODB_URI;
+mongoose.set('strictQuery', false);
+
+if (!mongoUri) {
+  console.error('MONGODB_URI is not set. Set it in your environment or in backend/.env');
+  process.exit(1);
+}
+
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000,
 }).then(() => {
   console.log('Connected to MongoDB');
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
 }).catch((err) => {
   console.error('MongoDB connection error:', err);
+  process.exit(1);
 });
 
 // Routes
@@ -45,6 +57,3 @@ app.get('/', (req, res) => {
   res.send({ status: 'ok', message: 'API root' });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
