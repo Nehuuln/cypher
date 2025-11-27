@@ -134,19 +134,19 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Formulaire d'inscription minimal** (Minimisation)
+- [X] **Formulaire d'inscription minimal** (Minimisation)
 
   - Champs collectés : Email, Mot de passe, Nom **SEULEMENT**
   - **Interdiction** : Date de naissance, Numéro Sécu, Adresse complète (sauf si justifiée pour livraison)
 
-- [ ] **Consentement explicite** (non pré-coché)
+- [X] **Consentement explicite** (non pré-coché)
 
   - Case à cocher : `<input type="checkbox" name="consent">`
   - Pas d'attribut `checked` (doit être décochée par défaut)
   - Text : "J'accepte que mes données soient utilisées pour [usage précis]"
   - Impossible soumettre sans cocher
 
-- [ ] **Page Mentions Légales** (Transparence)
+- [X] **Page Mentions Légales** (Transparence)
 
   - Lien visible dans le footer de toutes les pages
   - Contenu : Qui gère le site, quelles données, à quoi elles servent, droits utilisateurs
