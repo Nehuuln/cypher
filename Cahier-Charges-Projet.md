@@ -79,7 +79,7 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
   - Tentative accès `/admin` en tant qu'User → **Rejet (403 ou Redirect)**
   - Code serveur vérifie `if (user.role !== 'ADMIN') { deny(); }`
 
-- [ ] **Impossible de modifier l'ID utilisateur pour voir une autre personne** (IDOR)
+- [X] **Impossible de modifier l'ID utilisateur pour voir une autre personne** (IDOR)
   - Si on accède `/profil/user/5`, c'est mon compte (user 5)
   - Si on change `/profil/user/99`, rejet (ce compte ne m'appartient pas)
 
