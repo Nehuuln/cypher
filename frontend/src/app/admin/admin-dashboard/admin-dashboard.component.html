@@ -3,12 +3,13 @@
   <div *ngIf="error" class="error">{{ error }}</div>
   <div *ngIf="loading">Chargement...</div>
   <table *ngIf="!loading && users.length">
-    <thead><tr><th>Username</th><th>Email</th><th>Roles</th></tr></thead>
+    <thead><tr><th>Username</th><th>Email</th><th>Roles</th><th>ID</th></tr></thead>
     <tbody>
       <tr *ngFor="let u of users">
         <td>{{ u.username }}</td>
         <td>{{ u.email }}</td>
         <td>{{ u.roles?.join(', ') }}</td>
+        <td>{{ u._id }}</td>
       </tr>
     </tbody>
   </table>
