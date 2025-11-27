@@ -152,7 +152,7 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
   - Contenu : Qui gère le site, quelles données, à quoi elles servent, droits utilisateurs
   - Peut être minimaliste pour un projet école
 
-- [ ] **Fichier `.env.example`** documentant les variables d'environnement
+- [X] **Fichier `.env.example`** documentant les variables d'environnement
   - Utilisateurs et développeurs savent ce qui est requis
 
 **Preuves requises pour validation :**

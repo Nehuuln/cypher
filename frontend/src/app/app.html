@@ -1,12 +1,20 @@
 <nav>
-    <div class="nav-wrapper teal">
-        <a href="#" class="brand-logo center">Cypher</a>
-        <div class="user-info" *ngIf="username">
-            Bonjour, {{ username }}
-        </div>
-        <a href="/admin/dashboard" *ngIf="isAdmin" class="float-end btn btn-sm btn-outline-light">Dashboard</a>
-        <button *ngIf="username" (click)="logout()" class="btn btn-sm btn-outline-light">Se déconnecter</button>
+  <div class="nav-wrapper teal">
+    <a href="#" class="brand-logo center">Cypher</a>
+    <div class="user-info" *ngIf="username">
+      Bonjour, {{ username }}
     </div>
+    <div>
+      <a href="/login" *ngIf="!username && !isLoginRoute" class="float-end btn btn-sm btn-outline-light">Se
+        connecter</a>
+      <a href="/register" *ngIf="!username && !isRegisterRoute"
+        class="float-end btn btn-sm btn-outline-light">S'inscrire</a>
+      <a *ngIf="username" (click)="logout()" class="btn btn-sm btn-outline-light">Se déconnecter</a>
+      <a href="/admin/dashboard" *ngIf="isAdmin" class="float-end btn btn-sm btn-outline-light">Dashboard</a>
+
+    </div>
+
+  </div>
 </nav>
 
 <router-outlet></router-outlet>
