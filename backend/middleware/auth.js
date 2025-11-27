@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 // Verify token from cookie and implement sliding expiration
 function authMiddleware(req, res, next) {
@@ -74,7 +75,6 @@ function adminOnly(req, res, next) {
   }
 }
 
-// --- NEW: ensureSameUserOrAdmin middleware ---
 function ensureSameUserOrAdmin(req, res, next) {
   try {
     const payload = req.user;
@@ -82,9 +82,12 @@ function ensureSameUserOrAdmin(req, res, next) {
     const roles = Array.isArray(payload.roles) ? payload.roles : [];
     const isAdmin = roles.some(r => String(r).toLowerCase() === 'admin' || String(r).toLowerCase() === 'administrator');
 
-    // prefer param id, fallback to body or query
     const requestedId = req.params?.id || req.body?.id || req.query?.id;
     if (!requestedId) return res.status(400).json({ message: 'Missing user id' });
+
+    if (!mongoose.Types.ObjectId.isValid(requestedId)) {
+      return res.status(400).json({ message: 'Invalid user id format' });
+    }
 
     if (String(payload.id) === String(requestedId) || isAdmin) {
       return next();

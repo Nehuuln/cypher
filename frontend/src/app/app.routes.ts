@@ -4,10 +4,12 @@ import { LoginComponent } from './auth/login/login.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminGuard } from './auth/admin.guard';
 import { ProfileComponent } from './profile/profile.component'
+import { ProfileRedirectComponent } from './profile/profile-redirect.component';
 
 export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AdminGuard] },
+  { path: 'profil', component: ProfileRedirectComponent },
   { path: 'profil/user/:id', component: ProfileComponent },
 ];
