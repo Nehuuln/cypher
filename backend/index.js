@@ -62,6 +62,10 @@ mongoose
 const authRouter = require("./routes/auth");
 app.use("/api", authRouter);
 
+// RGPD routes
+const rgpdRouter = require("./routes/rgpd");
+app.use("/api/rgpd", rgpdRouter);
+
 app.get("/", (req, res) => {
   res.send({ status: "ok", message: "API root" });
 });
