@@ -5,6 +5,7 @@ import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard
 import { AdminGuard } from './auth/admin.guard';
 import { ProfileComponent } from './profile/profile.component'
 import { ProfileRedirectComponent } from './profile/profile-redirect.component';
+import { LegalComponent } from './legal/legal.component';
 
 export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -12,4 +13,5 @@ export const routes: Routes = [
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AdminGuard] },
   { path: 'profil', component: ProfileRedirectComponent },
   { path: 'profil/user/:id', component: ProfileComponent },
+  { path: 'legal', component: LegalComponent },
 ];

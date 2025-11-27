@@ -7,7 +7,16 @@
         <a href="/admin/dashboard" *ngIf="isAdmin" class="float-end btn btn-sm btn-outline-light">Dashboard</a>
         <button *ngIf="username" (click)="logout()" class="btn btn-sm btn-outline-light">Se déconnecter</button>
     </div>
-
 </nav>
 
-<router-outlet />
+<router-outlet></router-outlet>
+
+<footer class="page-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col s12">
+        <a href="/legal">Mentions légales & confidentialité</a>
+      </div>
+    </div>
+  </div>
+</footer>
