@@ -7,10 +7,10 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   selector: 'app-profile-redirect',
   standalone: true,
   imports: [CommonModule, HttpClientModule],
-  template: `<div>Redirection vers votre profil…</div>`
+  template: `<div>Redirection vers votre profil…</div>`,
 })
 export class ProfileRedirectComponent implements OnInit {
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = 'https://localhost:3000';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -24,7 +24,7 @@ export class ProfileRedirectComponent implements OnInit {
           this.router.navigate(['/login']);
         }
       },
-      error: () => this.router.navigate(['/login'])
+      error: () => this.router.navigate(['/login']),
     });
   }
 }

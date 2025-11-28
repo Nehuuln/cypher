@@ -9,12 +9,13 @@ import { AuthService } from '../auth/auth.service';
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, HttpClientModule],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit {
   user: any = null;
   loading = true;
   error: string | null = null;
+  private baseUrl = 'https://localhost:3000';
   private baseUrl = 'http://localhost:3000';
   selectedFile: File | null = null;
   avatarUrl: string | null = null;
@@ -32,10 +33,13 @@ export class ProfileComponent implements OnInit {
     this.auth.currentUser$.pipe(take(1)).subscribe((cur) => {
       if (!cur) {
         // fetch me(), then check
-        this.auth.me().pipe(take(1)).subscribe({
-          next: (res) => this.handleMe(res?.user ?? res, id),
-          error: () => this.router.navigate(['/login'])
-        });
+        this.auth
+          .me()
+          .pipe(take(1))
+          .subscribe({
+            next: (res) => this.handleMe(res?.user ?? res, id),
+            error: () => this.router.navigate(['/login']),
+          });
       } else {
         this.handleMe(cur, id);
       }
@@ -62,6 +66,20 @@ export class ProfileComponent implements OnInit {
     }
 
     // fetch profile from API (server will also check)
+    this.http
+      .get<any>(`${this.baseUrl}/api/users/${requestedId}`, { withCredentials: true })
+      .subscribe({
+        next: (res) => {
+          this.user = res.user;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Erreur';
+          this.loading = false;
+        },
+      });
+  }
+}
     this.http.get<any>(`${this.baseUrl}/api/users/${requestedId}`, { withCredentials: true }).subscribe({
       next: (res) => { this.user = res.user; this.loading = false; this.loadAvatar(requestedId); },
       error: (err) => { this.error = err?.error?.message || 'Erreur'; this.loading = false; }

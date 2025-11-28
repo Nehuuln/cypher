@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
+const helmet = require("helmet");
+const fs = require("fs");
+const https = require("https");
+
 const sanitizeMiddleware = require("./middleware/sanitize");
 const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
@@ -13,9 +17,13 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Remplacez l'appel générique à cors() par une configuration qui autorise l'origine et les credentials
+app.use(helmet());
+
+app.use(helmet.frameguard({ action: "deny" }));
+app.use(helmet.noSniff());
+
 const corsOptions = {
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:4200",
+  origin: process.env.FRONTEND_ORIGIN || "https://localhost:4200",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -32,7 +40,6 @@ app.use("/api/admin", adminRouter);
 app.use("/api/users", usersRouter);
 app.use("/api", authRouter);
 
-// MongoDB connection and server start
 const mongoUri = process.env.MONGODB_URI;
 mongoose.set("strictQuery", false);
 
@@ -51,9 +58,26 @@ mongoose
   })
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
+
+    try {
+      const httpsOptions = {
+        key: fs.readFileSync("./certs/localhost+1-key.pem"),
+        cert: fs.readFileSync("./certs/localhost+1.pem"),
+      };
+
+      https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Secure Server running on port ${port} (HTTPS)`);
+      });
+    } catch (error) {
+      console.error(
+        "Erreur lors du chargement des certificats SSL :",
+        error.message
+      );
+      console.error(
+        "Assurez-vous d'avoir généré les certificats dans backend/certs/ avec mkcert."
+      );
+      process.exit(1);
+    }
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
