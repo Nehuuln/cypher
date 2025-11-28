@@ -14,10 +14,13 @@
   "keywords": [],
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
-    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
-    "mongoose": "^6.13.8"
+    "file-type": "^21.1.1",
+    "mongoose": "^6.13.8",
+    "multer": "^2.0.2",
+    "uuid": "^13.0.0"
   }
 }

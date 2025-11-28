@@ -3,8 +3,15 @@
   <div *ngIf="loading">Chargement...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
   <div *ngIf="!loading && user">
+    <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="Avatar" style="max-width:150px;max-height:150px;border-radius:8px" /></div>
     <p><strong>Username:</strong> {{ user.username }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
     <p><strong>Roles:</strong> {{ user.roles?.join(', ') }}</p>
+
+    <div>
+      <label>Changer avatar</label>
+      <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onFileSelected($event)" />
+      <button (click)="uploadAvatar()" [disabled]="!selectedFile">Upload</button>
+    </div>
   </div>
 </div>
