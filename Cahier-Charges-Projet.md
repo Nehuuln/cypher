@@ -189,21 +189,21 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises** _(SEULEMENT si votre projet inclut un upload de fichier)_:
 
-- [ ] **Validation d'extension**
+- [X] **Validation d'extension**
 
   - Accepté : `.jpg`, `.png`, `.pdf` uniquement
   - Rejeté : `.exe`, `.php`, `.zip`, etc.
 
-- [ ] **Validation du type MIME** côté serveur
+- [X] **Validation du type MIME** côté serveur
 
   - `mime_content_type()`, `finfo_file()`, ou libraire `file-type`
 
-- [ ] **Fichier renommé avec UUID**
+- [X] **Fichier renommé avec UUID**
 
   - Au lieu de : `mon-avatar.jpg`
   - Renommé en : `550e8400-e29b-41d4-a716-446655440000.jpg`
 
-- [ ] **Stockage en dehors du web root** (optionnel mais recommandé)
+- [X] **Stockage en dehors du web root** (optionnel mais recommandé)
 
 **Preuves requises pour validation :**
 

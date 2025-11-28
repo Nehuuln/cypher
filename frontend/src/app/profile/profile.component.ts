@@ -16,6 +16,9 @@ export class ProfileComponent implements OnInit {
   loading = true;
   error: string | null = null;
   private baseUrl = 'https://localhost:3000';
+  private baseUrl = 'http://localhost:3000';
+  selectedFile: File | null = null;
+  avatarUrl: string | null = null;
 
   constructor(
     private auth: AuthService,
@@ -75,5 +78,48 @@ export class ProfileComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+}
+    this.http.get<any>(`${this.baseUrl}/api/users/${requestedId}`, { withCredentials: true }).subscribe({
+      next: (res) => { this.user = res.user; this.loading = false; this.loadAvatar(requestedId); },
+      error: (err) => { this.error = err?.error?.message || 'Erreur'; this.loading = false; }
+    });
+  }
+
+  onFileSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      this.selectedFile = input.files[0];
+    } else {
+      this.selectedFile = null;
+    }
+  }
+
+  uploadAvatar() {
+    if (!this.selectedFile || !this.user) return;
+    const form = new FormData();
+    form.append('avatar', this.selectedFile);
+    this.http.put<any>(`${this.baseUrl}/api/users/${this.user._id}`, form, { withCredentials: true }).subscribe({
+      next: (res) => {
+        this.user = res.user;
+        this.selectedFile = null;
+        this.loadAvatar(this.user._id);
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Erreur upload';
+      }
+    });
+  }
+
+  loadAvatar(userId: string) {
+    this.http.get(`${this.baseUrl}/api/users/${userId}/avatar`, { responseType: 'blob', withCredentials: true }).subscribe({
+      next: (blob) => {
+        if (this.avatarUrl) URL.revokeObjectURL(this.avatarUrl);
+        this.avatarUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.avatarUrl = null;
+      }
+    });
   }
 }
