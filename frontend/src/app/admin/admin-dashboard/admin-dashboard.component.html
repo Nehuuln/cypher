@@ -5,6 +5,7 @@
   <table *ngIf="!loading && users.length">
     <thead>
       <tr>
+        <th>Avatar</th>
         <th>Username</th>
         <th>Email</th>
         <th>Roles</th>
@@ -14,6 +15,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let u of users">
+        <td><img [src]="'http://localhost:3000/api/users/' + u._id + '/avatar'" alt="Avatar" style="max-width:50px;max-height:50px;border-radius:4px" /></td>
         <td>{{ u.username }}</td>
         <td>{{ u.email }}</td>
         <td>{{ u.roles?.join(', ') }}</td>
