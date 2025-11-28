@@ -7,8 +7,6 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   roles: { type: [String], default: ["user"] },
   bio: { type: String, default: "", maxlength: 1000 },
-  // Avatar filename stored in backend/uploads (UUID + ext)
-  avatar: { type: String, default: null },
 });
 
 module.exports = mongoose.model("User", userSchema);

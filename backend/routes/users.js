@@ -81,14 +81,6 @@ router.put(
         updates.bio = escapeHtml(req.body.bio);
       }
 
-      // avatar filename (optional) - set when uploaded via uploads endpoint
-      if (req.body.avatar !== undefined) {
-        if (req.body.avatar && typeof req.body.avatar !== 'string') {
-          return res.status(400).json({ message: 'Avatar invalide.' });
-        }
-        updates.avatar = req.body.avatar || null;
-      }
-
       const user = await User.findByIdAndUpdate(id, updates, {
         new: true,
       }).select("-password");

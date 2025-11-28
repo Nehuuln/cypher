@@ -32,10 +32,6 @@ app.use("/api/admin", adminRouter);
 app.use("/api/users", usersRouter);
 app.use("/api", authRouter);
 
-// Uploads (avatars, post images)
-const uploadsRouter = require("./routes/uploads");
-app.use("/api/uploads", uploadsRouter);
-
 // MongoDB connection and server start
 const mongoUri = process.env.MONGODB_URI;
 mongoose.set("strictQuery", false);
