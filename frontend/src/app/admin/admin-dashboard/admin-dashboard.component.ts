@@ -12,7 +12,7 @@ export class AdminDashboardComponent {
   users: any[] = [];
   loading = false;
   error: string | null = null;
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = 'https://localhost:3000';
 
   constructor(private http: HttpClient) {
     this.loadUsers();
