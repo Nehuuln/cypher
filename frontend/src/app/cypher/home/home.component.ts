@@ -8,13 +8,6 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, HttpClientModule],
   templateUrl: './home.component.html',
-  styles: [`
-    .post { padding: 12px; border-bottom: 1px solid #eee; }
-    .author-line { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #ddd; }
-    .author-meta { font-size: 0.95rem; }
-    .text { margin: 8px 0 12px 0; }
-  `]
 })
 export class HomeComponent implements OnInit {
   posts: any[] = [];
@@ -31,8 +24,14 @@ export class HomeComponent implements OnInit {
   load() {
     this.loading = true;
     this.http.get<any>(`${this.baseUrl}/api/posts`).subscribe({
-      next: (res) => { this.posts = res.posts ?? []; this.loading = false; },
-      error: (err) => { this.error = err?.error?.message || 'Erreur'; this.loading = false; }
+      next: (res) => {
+        this.posts = res.posts ?? [];
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Erreur';
+        this.loading = false;
+      },
     });
   }
 

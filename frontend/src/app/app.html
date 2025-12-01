@@ -1,30 +1,61 @@
-<nav>
-  <div class="nav-wrapper teal">
-    <a href="#" class="brand-logo center">Cypher</a>
-    <div class="user-info" *ngIf="username">
-      Bonjour, {{ username }}
-    </div>
-    <div>
-      <a href="/login" *ngIf="!username && !isLoginRoute" class="float-end btn btn-sm btn-outline-light">Se
-        connecter</a>
-      <a href="/register" *ngIf="!username && !isRegisterRoute"
-        class="float-end btn btn-sm btn-outline-light">S'inscrire</a>
-      <a *ngIf="username" (click)="logout()" class="btn btn-sm btn-outline-light">Se déconnecter</a>
-      <a href="/admin/dashboard" *ngIf="isAdmin" class="float-end btn btn-sm btn-outline-light">Dashboard</a>
-
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="logo-container">
+      <a href="/" class="brand-logo">Cypher</a>
     </div>
 
-  </div>
-</nav>
+    <nav class="nav-links">
+      <a href="/" class="nav-item">
+        <span>Accueil</span>
+      </a>
 
-<router-outlet></router-outlet>
+      <a href="/admin/dashboard" *ngIf="isAdmin" class="nav-item">
+        <span>Admin</span>
+      </a>
+    </nav>
 
-<footer class="page-footer">
-  <div class="container">
-    <div class="row">
-      <div class="col s12">
-        <a href="/legal">Mentions légales & confidentialité</a>
+    <div class="auth-buttons">
+      <ng-container *ngIf="!username">
+        <a href="/login" class="action-btn" *ngIf="!isLoginRoute">Se connecter</a>
+        <a href="/register" class="action-btn outline" *ngIf="!isRegisterRoute">S'inscrire</a>
+      </ng-container>
+
+      <ng-container *ngIf="username">
+        <a href="/create"><button class="action-btn">Nouveau Message</button></a>
+      </ng-container>
+    </div>
+
+    <div class="user-profile-widget" *ngIf="username">
+      <a href="/profil" class="profile-info">
+        <div class="user-details">
+          <div class="user-name">{{ username }}</div>
+          <div class="user-handle">@{{ username }}</div>
+        </div>
+      </a>
+
+      <div class="logout-btn" (click)="logout()" title="Se déconnecter">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path
+            d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9Z"
+          />
+        </svg>
       </div>
     </div>
-  </div>
-</footer>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+
+    <footer class="sticky-footer">
+      <div class="footer-links">
+        <a routerLink="/legal">Mentions légales</a>
+        <span>&bull;</span>
+        <a routerLink="/legal">Confidentialité</a>
+        <span>&bull;</span>
+        <span>© 2025 Cypher</span>
+      </div>
+    </footer>
+  </main>
+</div>

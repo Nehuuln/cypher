@@ -1,1 +1,555 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+  box-sizing: border-box;
+}
+
+/* Variables Globales */
+:root {
+  --primary-color: #1d9bf0;
+  --primary-hover: #1a8cd8;
+  --bg-color: #ffffff;
+  --text-main: #0f1419;
+  --text-secondary: #536471;
+  --border-color: #eff3f4;
+  --sidebar-width: 320px;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+}
+
+/* Structure principale */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  padding: 0 20px 0 12px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logo-container {
+  padding: 12px 12px 2px 12px;
+  margin-bottom: 2px;
+}
+
+.brand-logo {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.brand-logo:hover {
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  color: var(--text-main);
+  text-decoration: none;
+  padding: 12px 24px 12px 16px;
+  border-radius: 30px;
+  transition: background-color 0.2s;
+  width: fit-content;
+  font-weight: 600;
+  background-color: transparent !important;
+}
+
+.nav-item:hover {
+  background-color: var(--border-color) !important;
+}
+
+.nav-item.active {
+  font-weight: 700;
+}
+
+/* --- Boutons d'action --- */
+.action-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 15px 0;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 250px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.action-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.action-btn.outline {
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  margin-top: 12px;
+  box-shadow: none;
+}
+
+.action-btn.outline:hover {
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.user-profile-widget {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.profile-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 15px;
+  border-radius: 30px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-right: 8px;
+}
+
+.profile-info:hover {
+  background-color: var(--border-color);
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.user-handle {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-main);
+  border: 1px solid transparent;
+}
+
+.logout-btn:hover {
+  background-color: rgba(244, 33, 46, 0.1);
+  color: #f4212e;
+  border-color: rgba(244, 33, 46, 0.2);
+}
+
+.main-content {
+  flex: 1;
+  border-right: 1px solid var(--border-color);
+  min-width: 600px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.page-content {
+  flex: 1 0 auto;
+  padding-bottom: 20px;
+}
+
+/* --- Footer --- */
+.sticky-footer {
+  flex-shrink: 0;
+  padding: 15px 0;
+  border-top: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  position: sticky;
+  bottom: 0;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+/* --- (Login & Register) --- */
+
+.auth-container {
+  max-width: 450px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.auth-container h2 {
+  font-size: 31px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: var(--text-main);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 12px;
+  font-size: 16px;
+  color: var(--text-main);
+  background-color: var(--bg-color);
+  border: 1px solid #cfd9de;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.checkbox-group input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: 400;
+}
+
+.error-msg {
+  color: #f4212e;
+  background-color: rgba(244, 33, 46, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-msg {
+  color: #00ba7c;
+  background-color: rgba(0, 186, 124, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 30px;
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  opacity: 0.9;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-footer {
+  margin-top: 25px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.auth-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* --- POSTS --- */
+
+.home h2,
+.create-post h2 {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.85); /* Effet verre */
+  backdrop-filter: blur(12px);
+  margin: 0;
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+/* --- 4. CRÉATION DE POST (Nouvelle publication) --- */
+.create-post {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.create-post h2 {
+  display: none; /* On cache le titre "Nouvelle publication" pour faire plus épuré, ou gardez-le si vous préférez */
+}
+
+.create-post > div {
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+/* Zone de texte "Quoi de neuf ?" */
+.create-post textarea {
+  width: 100%;
+  border: 1px solid #cfd9de; /* Bordure grise standard */
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 16px;
+  background-color: white; /* Fond blanc */
+  color: var(--text-main);
+  min-height: 100px;
+  resize: vertical; /* L'utilisateur peut l'agrandir */
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+
+.create-post textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Labels et Inputs fichiers */
+.create-post {
+  margin: 16px; /* Décalé des bords */
+  padding: 16px;
+  background-color: #f7f9f9; /* Fond gris très léger pour le distinguer */
+  border: 1px solid var(--border-color); /* Bordure visible */
+  border-radius: 16px; /* Coins arrondis */
+}
+
+/* Le champ de texte ressemble maintenant à un vrai input */
+.create-post textarea {
+  width: 100%;
+  border: 1px solid #cfd9de; /* Bordure grise standard */
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 16px;
+  background-color: white; /* Fond blanc */
+  color: var(--text-main);
+  min-height: 100px;
+  resize: vertical; /* L'utilisateur peut l'agrandir */
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+
+.create-post textarea:focus {
+  border-color: var(--primary-color); /* Focus bleu */
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+/* Zone bas du formulaire */
+.create-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.create-post label {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.create-post label:hover {
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.create-post button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.create-post button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.create-post button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+/* --- 5. LISTE DES POSTS (Style compact) --- */
+.post {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  gap: 12px;
+}
+
+.post:hover {
+  background-color: var(--hover-bg);
+}
+
+.avatar-col {
+  flex-shrink: 0;
+}
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e1e8ed;
+}
+
+.content-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.author-line {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.username {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.handle,
+.separator,
+.date {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-main);
+  white-space: pre-wrap;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+/* MODIFICATION : Images réduites */
+.media-container img,
+.media-container video {
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  height: auto;
+
+  /* Taille contrainte */
+  max-height: 250px; /* Hauteur max réduite (était 500px) */
+  object-fit: cover; /* Coupe l'image proprement si elle dépasse */
+  object-position: center;
+
+  display: block;
+  margin-top: 8px;
+}
