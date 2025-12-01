@@ -235,20 +235,20 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Fichier `.env`** en `.gitignore` (jamais push de secrets)
+- [X] **Fichier `.env`** en `.gitignore` (jamais push de secrets)
 
   - Variables : `DB_PASSWORD`, `API_KEY`, `JWT_SECRET`, etc.
 
-- [ ] **Fichier `.env.example`** dans le repo
+- [X] **Fichier `.env.example`** dans le repo
 
   - Montre les variables requises SANS les valeurs
 
-- [ ] **Aucun secret en clair dans le code source**
+- [X] **Aucun secret en clair dans le code source**
 
   - Vérifier : `grep -r "password\|api_key\|secret" src/` (doit être vide)
   - Vérifier : `git log` ne contient pas de secrets anciens
 
-- [ ] **Mode Production** séparé du mode Dev
+- [X] **Mode Production** séparé du mode Dev
   - Erreurs détaillées affichées localement seulement
   - En production : Messages d'erreur génériques
 
