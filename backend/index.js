@@ -27,6 +27,8 @@ app.use(helmet.noSniff());
 const rawOrigins = process.env.FRONTEND_ORIGIN || "https://localhost:4200";
 const allowedOrigins = rawOrigins.split(",").map((s) => s.trim());
 
+const ALLOWED_ORIGINS = allowedOrigins;
+
 const corsOptions = {
   origin: function (origin, callback) {
     console.log('CORS check, incoming Origin:', origin);
