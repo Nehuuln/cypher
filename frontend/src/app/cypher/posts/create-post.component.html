@@ -1,0 +1,15 @@
+<div class="create-post">
+  <h2>Nouvelle publication</h2>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div>
+    <label>Texte</label>
+    <textarea [(ngModel)]="text" rows="4"></textarea>
+  </div>
+  <div>
+    <label>Média (image ou vidéo ≤ 1 minute)</label>
+    <input type="file" accept=".jpg,.jpeg,.png,.mp4,.webm,.mov" (change)="onFileSelected($event)" />
+  </div>
+  <div>
+    <button (click)="submit()" [disabled]="loading">{{ loading ? 'Publication...' : 'Publier' }}</button>
+  </div>
+</div>
