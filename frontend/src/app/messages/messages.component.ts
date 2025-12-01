@@ -37,6 +37,12 @@ export class MessagesComponent implements OnInit {
     });
   }
 
+  private getEntityId(entity: any): string | null {
+    if (!entity) return null;
+    if (typeof entity === 'string') return entity;
+    return entity._id ?? entity.id ?? null;
+  }
+
   loadConversations() {
     this.svc.listConversations().subscribe(res => {
       this.conversations = res.conversations ?? [];
@@ -76,13 +82,16 @@ export class MessagesComponent implements OnInit {
   // Helper: build avatar URL for a conversation (avoids complex template expressions)
   avatarForConversation(conv: any): string {
     if (!conv?.participants?.length) return '';
-    // find the other participant (not current user)
     const other = conv.participants.find((p: any) => String(p._id) !== String(this.currentUser?._id));
     const id = other?._id || conv.participants[0]._id;
     return `${this.baseUrl}/api/users/${id}/avatar`;
   }
 
-  // Helper: names of participants excluding current user
+  avatarUrlForUser(user: any): string {
+    const id = this.getEntityId(user);
+    return id ? `${this.baseUrl}/api/users/${id}/avatar` : '';
+  }
+
   participantNames(conv: any): string {
     if (!conv?.participants?.length) return '';
     return conv.participants
@@ -91,8 +100,17 @@ export class MessagesComponent implements OnInit {
       .join(', ');
   }
 
-  // Active conversation avatar shortcut
   avatarForActiveConv(): string {
     return this.avatarForConversation(this.activeConv);
+  }
+
+  attachmentUrl(convId: string, filename?: string): string {
+    if (!convId) return '';
+    const base = `${this.baseUrl}/api/messages/${convId}/attachments`;
+    return filename ? `${base}/${encodeURIComponent(filename)}` : `${base}/`;
+  }
+
+  onAvatarError(event: any) {
+    event.target.src = 'assets/default-avatar.png';
   }
 }

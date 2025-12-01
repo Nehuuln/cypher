@@ -42,7 +42,7 @@ router.get(
   }
 );
 
-router.get("/:id/avatar", authMiddleware, authMiddleware.ensureSameUserOrAdmin, async (req, res) => {
+router.get("/:id/avatar", async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id).select("avatar");
