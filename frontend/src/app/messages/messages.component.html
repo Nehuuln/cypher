@@ -1,0 +1,43 @@
+<div class="messages-page row" style="height:calc(100vh - 120px);gap:1rem;">
+  <div class="col left-panel card" style="width:320px;max-width:40vw;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+      <h5>Messages</h5>
+      <button (click)="startNewMessage()" class="btn-pill">Nouveau</button>
+    </div>
+    <div>
+      <div *ngFor="let c of conversations" (click)="openConversation(c._id)" style="display:flex;align-items:center;gap:.6rem;padding:.5rem;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+        <img *ngIf="c.participants?.length" [src]="avatarForConversation(c)" style="width:44px;height:44px;border-radius:8px;object-fit:cover" />
+        <div style="flex:1">
+          <div style="font-weight:600">{{ participantNames(c) }}</div>
+          <div class="small" style="color:#6b7280">{{ c.lastMessage?.text }}</div>
+        </div>
+        <div *ngIf="c.unread" style="background:#ef4444;color:#fff;padding:.2rem .5rem;border-radius:999px;">{{ c.unread }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col right-panel card" style="flex:1;display:flex;flex-direction:column;">
+    <div *ngIf="!activeConv" class="center small" style="padding:2rem;">Sélectionnez une conversation</div>
+
+    <div *ngIf="activeConv" style="display:flex;flex-direction:column;height:100%;">
+      <div style="padding:.6rem;border-bottom:1px solid #eee;display:flex;align-items:center;gap:.6rem;">
+        <img [src]="avatarForActiveConv()" style="width:40px;height:40px;border-radius:8px;object-fit:cover" />
+        <div style="font-weight:600">{{ participantNames(activeConv) }}</div>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:1rem;">
+        <div *ngFor="let m of activeConv.messages" style="display:flex;gap:.6rem;margin:.5rem 0;align-items:flex-end" [ngClass]="{'me': m.sender._id === currentUser?._id}">
+          <img class="avatar-small" [src]="'https://localhost:3000/api/users/' + m.sender._id + '/avatar'" style="width:36px;height:36px;border-radius:8px;object-fit:cover" />
+          <div style="max-width:70%;">
+            <div style="background:#fff;padding:.6rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.06)">{{ m.text }}</div>
+            <div class="small" style="color:#999;margin-top:.25rem">{{ m.createdAt | date:'short' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0.6rem;border-top:1px solid #eee;">
+        <app-message-input (send)="onSendFromInput($event)"></app-message-input>
+      </div>
+    </div>
+  </div>
+</div>

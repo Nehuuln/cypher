@@ -6,6 +6,7 @@ import { AdminGuard } from './auth/admin.guard';
 import { ProfileComponent } from './profile/profile.component'
 import { ProfileRedirectComponent } from './profile/profile-redirect.component';
 import { LegalComponent } from './legal/legal.component';
+import { MessagesComponent } from './messages/messages.component';
 
 export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -14,4 +15,5 @@ export const routes: Routes = [
   { path: 'profil', component: ProfileRedirectComponent },
   { path: 'profil/user/:id', component: ProfileComponent },
   { path: 'legal', component: LegalComponent },
+  { path: 'messages', component: MessagesComponent },
 ];
