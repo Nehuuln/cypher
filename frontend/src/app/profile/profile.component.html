@@ -1,17 +1,110 @@
-<div class="profile">
-  <h2>Profil</h2>
-  <div *ngIf="loading">Chargement...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-  <div *ngIf="!loading && user">
-    <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="Avatar" style="max-width:150px;max-height:150px;border-radius:8px" /></div>
-    <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Roles:</strong> {{ user.roles?.join(', ') }}</p>
+<div class="profile-page" *ngIf="!loading && user">
+  <div class="profile-header-bar">
+    <div class="back-button" (click)="goBack()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path
+          d="M7.414 13l5.043 5.04-1.414 1.42L3.586 12l7.457-7.46 1.414 1.42L7.414 11H21v2H7.414z"
+        ></path>
+      </svg>
+    </div>
+    <div class="header-info">
+      <h2>{{ user.username }}</h2>
+      <span>{{ posts.length }} posts</span>
+    </div>
+  </div>
 
-    <div>
-      <label>Changer avatar</label>
-      <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onFileSelected($event)" />
-      <button (click)="uploadAvatar()" [disabled]="!selectedFile">Upload</button>
+  <div class="profile-cover"></div>
+
+  <div class="profile-details-container">
+    <div class="profile-top-row">
+      <img
+        [src]="avatarUrl || 'assets/default-avatar.png'"
+        class="profile-avatar-lg"
+        [style.cursor]="isMyProfile ? 'pointer' : 'default'"
+        (click)="triggerAvatarUpload()"
+        title="Changer l'avatar"
+      />
+
+      <input
+        type="file"
+        id="avatarInput"
+        class="avatar-input-hidden"
+        accept=".jpg,.jpeg,.png"
+        (change)="onFileSelected($event)"
+      />
+
+      <button class="edit-profile-btn" *ngIf="isMyProfile">Éditer le profil</button>
+      <button
+        class="action-btn"
+        style="width: auto; margin: 0; padding: 8px 16px"
+        *ngIf="!isMyProfile"
+      >
+        Suivre
+      </button>
+    </div>
+
+    <div class="profile-name">{{ user.username }}</div>
+    <div class="profile-handle">@{{ user.tag || user.username }}</div>
+
+    <div class="profile-bio" *ngIf="user.bio">{{ user.bio }}</div>
+
+    <div class="profile-meta">
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path
+            d="M7 4V3h2v1h6V3h2v1h1.5C19.89 4 21 5.12 21 6.5v12c0 1.38-1.11 2.5-2.5 2.5h-13C4.12 21 3 19.88 3 18.5v-12C3 5.12 4.12 4 5.5 4H7zm0 2H5.5c-.27 0-.5.22-.5.5v12c0 .28.23.5.5.5h13c.28 0 .5-.22.5-.5v-12c0-.28-.22-.5-.5-.5H17v1h-2V6H9v1H7V6zm0 6h2v-2H7v2zm0 4h2v-2H7v2zm4-4h2v-2h-2v2zm0 4h2v-2h-2v2zm4-4h2v-2h-2v2z"
+          ></path>
+        </svg>
+        <span>A rejoint en {{ user.createdAt || '2025' | date : 'MMMM yyyy' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-tabs">
+    <div class="tab-item active">Posts</div>
+    <div class="tab-item">Réponses</div>
+    <div class="tab-item">Médias</div>
+    <div class="tab-item">J'aime</div>
+  </div>
+
+  <div class="profile-feed">
+    <div *ngIf="loadingPosts" style="padding: 20px; text-align: center">Chargement...</div>
+
+    <div
+      *ngIf="!loadingPosts && posts.length === 0"
+      style="padding: 40px; text-align: center; color: var(--text-secondary)"
+    >
+      Rien à voir ici pour l'instant.
+    </div>
+
+    <div *ngFor="let p of posts" class="post">
+      <div class="avatar-col">
+        <img
+          [src]="getPostAvatarUrl(p.author)"
+          class="avatar"
+          crossorigin="use-credentials"
+          (error)="$event.target.style.display = 'none'"
+        />
+      </div>
+      <div class="content-col">
+        <div class="author-line">
+          <span class="username">{{ p.author?.username }}</span>
+          <span class="handle">@{{ p.author?.username }}</span>
+          <span class="separator">·</span>
+          <span class="date">{{ p.createdAt | date : 'd MMM' }}</span>
+        </div>
+        <div class="text">{{ p.text }}</div>
+
+        <div class="media-container" *ngIf="p.media">
+          <img *ngIf="p.media.kind === 'image'" [src]="mediaUrl(p)" crossorigin="use-credentials" />
+          <div *ngIf="p.media.kind === 'video'">
+            <video [src]="mediaUrl(p)" crossorigin="use-credentials" controls></video>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<div *ngIf="loading" style="padding: 20px">Chargement du profil...</div>
+<div *ngIf="error" class="error-msg" style="margin: 20px">{{ error }}</div>
