@@ -125,7 +125,6 @@ router.post('/:id', authMiddleware, ensureParticipant, upload.array('attachments
     conv.lastMessageAt = new Date();
     await conv.save();
 
-    // Emit websocket event if socket available (io is attached to app)
     try {
       const io = req.app.get('io');
       if (io) {
@@ -151,11 +150,9 @@ router.post('/:id', authMiddleware, ensureParticipant, upload.array('attachments
 router.get('/:id/attachments/:filename', authMiddleware, ensureParticipant, async (req, res) => {
   try {
     const filename = req.params.filename;
-    // reload the conversation with messages (ensureParticipant only loaded participants)
     const conv = await Conversation.findById(req.params.id).select('messages').lean();
     if (!conv) return res.status(404).json({ message: 'Conversation not found' });
 
-    // search attachments inside messages
     let found = null;
     for (const m of conv.messages || []) {
       const a = (m.attachments || []).find(x => String(x.filename) === String(filename));
@@ -170,21 +167,17 @@ router.get('/:id/attachments/:filename', authMiddleware, ensureParticipant, asyn
       return res.status(404).json({ message: 'Attachment not found', available });
     }
 
-    // normalize different possible data shapes (Buffer, BSON Binary, { data: [] }, base64 string)
     let dataBuf = null;
     try {
       if (Buffer.isBuffer(found.data)) {
         dataBuf = found.data;
       } else if (found.data && found.data.buffer) {
-        // e.g. BSON Binary or typed array
         dataBuf = Buffer.from(found.data.buffer);
       } else if (found.data && Array.isArray(found.data.data)) {
         dataBuf = Buffer.from(found.data.data);
       } else if (typeof found.data === 'string') {
-        // try base64 then fallback to utf-8
         try {
           dataBuf = Buffer.from(found.data, 'base64');
-          // if decoding produced empty, fallback
           if (!dataBuf || dataBuf.length === 0) dataBuf = Buffer.from(found.data);
         } catch (e) {
           dataBuf = Buffer.from(found.data);

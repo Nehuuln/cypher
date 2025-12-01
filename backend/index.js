@@ -61,7 +61,7 @@ app.use(express.json());
 
 // extra safety: reflect allowed origin (use request origin when allowed)
 app.use((req, res, next) => {
-  const origin = req.headers.origin ? String(req.headers.origin).replace(/\/+$/g, "") : "";
+  const origin = req.headers.origin ? String(req.headers.origin).replaceAll(/\/+$/g, "") : "";
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   } else {
