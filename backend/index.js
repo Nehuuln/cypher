@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(helmet.frameguard({ action: "deny" }));
 app.use(helmet.noSniff());
 
@@ -32,7 +32,6 @@ const ALLOWED_ORIGINS = allowedOrigins;
 const corsOptions = {
   origin: function (origin, callback) {
     console.log('CORS check, incoming Origin:', origin);
-    // allow non-browser requests (no origin) like curl/Postman
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     console.warn('CORS origin rejected:', origin);

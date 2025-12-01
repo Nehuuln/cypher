@@ -147,4 +147,80 @@ router.post('/:id', authMiddleware, ensureParticipant, upload.array('attachments
   }
 });
 
+// GET /api/messages/:id/attachments/:filename -> serve attachment (participant only)
+router.get('/:id/attachments/:filename', authMiddleware, ensureParticipant, async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    // reload the conversation with messages (ensureParticipant only loaded participants)
+    const conv = await Conversation.findById(req.params.id).select('messages').lean();
+    if (!conv) return res.status(404).json({ message: 'Conversation not found' });
+
+    // search attachments inside messages
+    let found = null;
+    for (const m of conv.messages || []) {
+      const a = (m.attachments || []).find(x => String(x.filename) === String(filename));
+      if (a) {
+        found = a;
+        break;
+      }
+    }
+    if (!found) {
+      const available = (conv.messages || []).flatMap(m => (m.attachments || []).map(a => a.filename));
+      console.warn(`Attachment not found: requested=${filename} available=${JSON.stringify(available)}`);
+      return res.status(404).json({ message: 'Attachment not found', available });
+    }
+
+    // normalize different possible data shapes (Buffer, BSON Binary, { data: [] }, base64 string)
+    let dataBuf = null;
+    try {
+      if (Buffer.isBuffer(found.data)) {
+        dataBuf = found.data;
+      } else if (found.data && found.data.buffer) {
+        // e.g. BSON Binary or typed array
+        dataBuf = Buffer.from(found.data.buffer);
+      } else if (found.data && Array.isArray(found.data.data)) {
+        dataBuf = Buffer.from(found.data.data);
+      } else if (typeof found.data === 'string') {
+        // try base64 then fallback to utf-8
+        try {
+          dataBuf = Buffer.from(found.data, 'base64');
+          // if decoding produced empty, fallback
+          if (!dataBuf || dataBuf.length === 0) dataBuf = Buffer.from(found.data);
+        } catch (e) {
+          dataBuf = Buffer.from(found.data);
+        }
+      }
+    } catch (e) {
+      console.error('Error normalizing attachment data for', found.filename, e);
+    }
+
+    if (!dataBuf) {
+      console.warn('Attachment data could not be normalized', { filename: found.filename, type: typeof found.data });
+      return res.status(500).json({ message: 'Attachment data invalid' });
+    }
+
+    console.log(`Serving attachment ${found.filename} (${found.contentType}) size=${dataBuf.length}`);
+    res.set('Content-Type', found.contentType || 'application/octet-stream');
+    res.set('Content-Disposition', `inline; filename="${found.filename}"`);
+    res.set('Content-Length', String(dataBuf.length));
+    return res.send(dataBuf);
+  } catch (err) {
+    console.error('GET /api/messages/:id/attachments/:filename error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DEBUG endpoint: list attachments filenames for a conversation (participant only)
+router.get('/:id/attachments', authMiddleware, ensureParticipant, async (req, res) => {
+  try {
+    const conv = await Conversation.findById(req.params.id).select('messages').lean();
+    if (!conv) return res.status(404).json({ message: 'Conversation not found' });
+    const files = (conv.messages || []).flatMap(m => (m.attachments || []).map(a => ({ filename: a.filename, contentType: a.contentType })));
+    return res.json({ attachments: files });
+  } catch (err) {
+    console.error('DEBUG GET /api/messages/:id/attachments error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

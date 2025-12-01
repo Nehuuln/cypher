@@ -12,6 +12,7 @@ import { AuthService } from './auth/auth.service';
 export class App {
   protected readonly title = signal('frontend');
   username: string | null = null;
+  tag: string | null = null;
   isAdmin = false;
   isLoginRoute = false;
   isRegisterRoute = false;
@@ -19,6 +20,7 @@ export class App {
   constructor(private auth: AuthService, private router: Router) {
     this.auth.currentUser$.subscribe((user) => {
       this.username = user?.username ?? null;
+      this.tag = user?.tag ?? null;
       const roles = Array.isArray(user?.roles) ? user.roles : [];
       this.isAdmin = roles.some((role: string) => String(role).toLowerCase() === 'admin');
     });
@@ -39,9 +41,11 @@ export class App {
   logout() {
     this.auth.logout().subscribe({
       next: () => {
+        this.tag = null;
         this.router.navigate(['/login']);
       },
       error: () => {
+        this.tag = null;
         this.router.navigate(['/login']);
       }
     });
