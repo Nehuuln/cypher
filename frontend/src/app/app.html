@@ -8,7 +8,7 @@
       <a href="/" class="nav-item">
         <span>Accueil</span>
       </a>
-      <a href="/messages" *ngIf="isAdmin" class="nav-item">
+      <a href="/messages" class="nav-item">
         <span>Message</span>
       </a>
 
@@ -24,7 +24,7 @@
       </ng-container>
 
       <ng-container *ngIf="username">
-        <a href="/create"><button class="action-btn">Nouveau Message</button></a>
+        <a href="/create"><button class="action-btn">Nouvelle Publication</button></a>
       </ng-container>
     </div>
 
