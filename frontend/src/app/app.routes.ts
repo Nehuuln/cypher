@@ -9,6 +9,7 @@ import { LegalComponent } from './legal/legal.component';
 import { MessagesComponent } from './messages/messages.component';
 import { HomeComponent } from './cypher/home/home.component';
 import { CreatePostComponent } from './cypher/posts/create-post.component'
+import { AuthGuard } from './auth/auth.guard'
 
 export const routes: Routes = [
   { path: '', component: HomeComponent},
@@ -18,6 +19,6 @@ export const routes: Routes = [
   { path: 'profil', component: ProfileRedirectComponent },
   { path: 'profil/user/:id', component: ProfileComponent },
   { path: 'legal', component: LegalComponent },
-  { path: 'messages', component: MessagesComponent },
-  { path: 'create', component: CreatePostComponent },
+  { path: 'messages', component: MessagesComponent, canActivate: [AuthGuard] },
+  { path: 'create', component: CreatePostComponent, canActivate: [AuthGuard] },
 ];
