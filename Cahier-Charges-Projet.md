@@ -216,11 +216,11 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Header `X-Content-Type-Options: nosniff`** présent dans les réponses HTTP
+- [X] **Header `X-Content-Type-Options: nosniff`** présent dans les réponses HTTP
 
-- [ ] **Header `X-Frame-Options: DENY`** (ou `SAMEORIGIN`) présent dans les réponses HTTP
+- [X] **Header `X-Frame-Options: DENY`** (ou `SAMEORIGIN`) présent dans les réponses HTTP
 
-- [ ] **HTTPS obligatoire** (même en dev/local)
+- [X] **HTTPS obligatoire** (même en dev/local)
   - Certificat auto-signé accepté (Mkcert, OpenSSL, ou Symfony CLI)
 
 **Preuves requises pour validation :**
