@@ -11,6 +11,7 @@ const sanitizeMiddleware = require("./middleware/sanitize");
 const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
+const postsRouter = require("./routes/posts");
 const errorHandler = require("./middleware/errorHandler");
 
 dotenv.config();
@@ -23,9 +24,19 @@ app.use(helmet());
 app.use(helmet.frameguard({ action: "deny" }));
 app.use(helmet.noSniff());
 
-// Configuration CORS
+// Configuration CORS - allow a comma-separated list in FRONTEND_ORIGIN
+const rawOrigins = process.env.FRONTEND_ORIGIN || "https://localhost:4200";
+const allowedOrigins = rawOrigins.split(",").map((s) => s.trim());
+
 const corsOptions = {
-  origin: process.env.FRONTEND_ORIGIN || "https://localhost:4200",
+  origin: function (origin, callback) {
+    console.log('CORS check, incoming Origin:', origin);
+    // allow non-browser requests (no origin) like curl/Postman
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn('CORS origin rejected:', origin);
+    return callback(new Error('CORS origin not allowed'));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -33,6 +44,18 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
+
+// Ensure responses vary on Origin (helps caching proxies) and explicitly
+// echo the request origin when allowed. This middleware runs after cors()
+app.use((req, res, next) => {
+  const reqOrigin = req.headers.origin;
+  if (reqOrigin && allowedOrigins.includes(reqOrigin)) {
+    res.header('Access-Control-Allow-Origin', reqOrigin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.header('Vary', 'Origin');
+  next();
+});
 app.use(cookieParser());
 app.use(express.json());
 
@@ -41,6 +64,7 @@ app.use(sanitizeMiddleware);
 // Routes
 app.use("/api/admin", adminRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/posts", postsRouter);
 app.use("/api", authRouter);
 
 app.use(errorHandler);
