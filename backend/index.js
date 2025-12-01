@@ -12,6 +12,7 @@ const messagesRouter = require("./routes/messages");
 const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
+const postsRouter = require("./routes/posts");
 const errorHandler = require("./middleware/errorHandler");
 
 dotenv.config();
@@ -22,21 +23,18 @@ app.use(helmet());
 app.use(helmet.frameguard({ action: "deny" }));
 app.use(helmet.noSniff());
 
-// Normalize FRONTEND origins (allow comma-separated), remove trailing slash
-const rawFrontend = process.env.FRONTEND_ORIGIN || "https://localhost:4200";
-const ALLOWED_ORIGINS = String(rawFrontend)
-  .split(",")
-  .map(s => s.trim().replace(/\/+$/g, "")) // remove trailing slash(es)
-  .filter(Boolean);
+// Configuration CORS - allow a comma-separated list in FRONTEND_ORIGIN
+const rawOrigins = process.env.FRONTEND_ORIGIN || "https://localhost:4200";
+const allowedOrigins = rawOrigins.split(",").map((s) => s.trim());
 
-// CORS configuration: dynamic origin check
 const corsOptions = {
   origin: function (origin, callback) {
-    // allow non-browser tools (curl, postman) with no origin
+    console.log('CORS check, incoming Origin:', origin);
+    // allow non-browser requests (no origin) like curl/Postman
     if (!origin) return callback(null, true);
-    const cleaned = String(origin).replace(/\/+$/g, "");
-    if (ALLOWED_ORIGINS.includes(cleaned)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn('CORS origin rejected:', origin);
+    return callback(new Error('CORS origin not allowed'));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -45,6 +43,18 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
+
+// Ensure responses vary on Origin (helps caching proxies) and explicitly
+// echo the request origin when allowed. This middleware runs after cors()
+app.use((req, res, next) => {
+  const reqOrigin = req.headers.origin;
+  if (reqOrigin && allowedOrigins.includes(reqOrigin)) {
+    res.header('Access-Control-Allow-Origin', reqOrigin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.header('Vary', 'Origin');
+  next();
+});
 app.use(cookieParser());
 app.use(express.json());
 
@@ -70,6 +80,7 @@ app.use(sanitizeMiddleware);
 app.use("/api/messages", messagesRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/posts", postsRouter);
 app.use("/api", authRouter);
 
 app.use(errorHandler);

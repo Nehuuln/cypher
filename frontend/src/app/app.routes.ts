@@ -7,8 +7,11 @@ import { ProfileComponent } from './profile/profile.component'
 import { ProfileRedirectComponent } from './profile/profile-redirect.component';
 import { LegalComponent } from './legal/legal.component';
 import { MessagesComponent } from './messages/messages.component';
+import { HomeComponent } from './cypher/home/home.component';
+import { CreatePostComponent } from './cypher/posts/create-post.component'
 
 export const routes: Routes = [
+  { path: '', component: HomeComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AdminGuard] },
@@ -16,4 +19,5 @@ export const routes: Routes = [
   { path: 'profil/user/:id', component: ProfileComponent },
   { path: 'legal', component: LegalComponent },
   { path: 'messages', component: MessagesComponent },
+  { path: 'create', component: CreatePostComponent },
 ];

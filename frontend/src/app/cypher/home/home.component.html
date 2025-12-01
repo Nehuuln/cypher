@@ -1,0 +1,18 @@
+<div class="home">
+  <h2>Fil d'actualité</h2>
+  <div *ngIf="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngFor="let p of posts" class="post">
+    <div class="author-line">
+      <img *ngIf="p.author" [src]="avatarUrl(p.author)" alt="avatar" class="avatar" crossorigin="use-credentials" (error)="$event.target.style.display='none'" />
+      <div class="author-meta"><strong>{{ p.author?.username }}</strong> — {{ p.createdAt | date:'short' }}</div>
+    </div>
+    <div class="text">{{ p.text }}</div>
+    <div *ngIf="p.media">
+      <img *ngIf="p.media.kind === 'image'" [src]="mediaUrl(p)" crossorigin="use-credentials" style="max-width:400px" />
+      <video *ngIf="p.media.kind === 'video'" [src]="mediaUrl(p)" crossorigin="use-credentials" controls style="max-width:600px"></video>
+      <div *ngIf="p.media.kind === 'video'">Durée: {{ p.media.duration || '?' }}s</div>
+    </div>
+  </div>
+</div>
