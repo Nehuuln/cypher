@@ -6,6 +6,7 @@ import { AdminGuard } from './auth/admin.guard';
 import { ProfileComponent } from './profile/profile.component'
 import { ProfileRedirectComponent } from './profile/profile-redirect.component';
 import { LegalComponent } from './legal/legal.component';
+import { MessagesComponent } from './messages/messages.component';
 import { HomeComponent } from './cypher/home/home.component';
 import { CreatePostComponent } from './cypher/posts/create-post.component'
 
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'profil', component: ProfileRedirectComponent },
   { path: 'profil/user/:id', component: ProfileComponent },
   { path: 'legal', component: LegalComponent },
+  { path: 'messages', component: MessagesComponent },
   { path: 'create', component: CreatePostComponent },
 ];
