@@ -1,0 +1,119 @@
+<div class="messages-page">
+  <div class="left-panel">
+    <div class="dm-header">
+      <h5>Messages</h5>
+      <button
+        (click)="startNewMessage()"
+        title="Nouveau message"
+        style="background: none; border: none; cursor: pointer"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="currentColor"
+          style="color: var(--text-main)"
+        >
+          <path
+            d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H16c.63-.016 1.2-.08 1.72-.188C16.95 15.24 14.68 17 12 17H8.55c.57-2.512 1.57-4.851 3-6.78 2.16-2.912 5.29-4.911 9.45-5.187C20.95 8.079 19.9 11 16 11zM4 9V6H1V4h3V1h2v3h3v2H6v3H4z"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="conv-list">
+      <div
+        *ngFor="let c of conversations"
+        class="conv-item"
+        [class.active]="activeConv && activeConv._id === c._id"
+        (click)="openConversation(c._id)"
+      >
+        <img
+          *ngIf="avatarForConversation(c)"
+          [src]="avatarForConversation(c)"
+          class="conv-avatar"
+          crossorigin="use-credentials"
+          (error)="onAvatarError($event)"
+        />
+
+        <div class="conv-info">
+          <div class="conv-names">{{ participantNames(c) }}</div>
+          <div class="conv-last-msg">
+            {{ c.lastMessage?.text || 'Démarrer une conversation' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div *ngIf="!activeConv" class="empty-state">
+      <h3>Sélectionnez un message</h3>
+      <p>Choisissez une conversation ou démarrez-en une nouvelle.</p>
+      <button
+        (click)="startNewMessage()"
+        class="action-btn"
+        style="width: auto; padding: 12px 24px; margin-top: 20px"
+      >
+        Nouveau message
+      </button>
+    </div>
+
+    <div *ngIf="activeConv" style="display: flex; flex-direction: column; height: 100%">
+      <div class="chat-header">
+        <img
+          *ngIf="avatarForActiveConv()"
+          [src]="avatarForActiveConv()"
+          crossorigin="use-credentials"
+          class="conv-avatar"
+          style="width: 32px; height: 32px"
+        />
+        <div class="chat-user-name">{{ participantNames(activeConv) }}</div>
+      </div>
+
+      <div class="messages-scroll">
+        <div
+          *ngFor="let m of activeConv.messages"
+          class="msg-row"
+          [ngClass]="{ me: m.sender._id === currentUser?._id }"
+        >
+          <img
+            *ngIf="m.sender._id !== currentUser?._id"
+            [src]="avatarUrlForUser(m.sender)"
+            class="msg-avatar"
+            crossorigin="use-credentials"
+            (error)="onAvatarError($event)"
+          />
+
+          <div class="msg-bubble">
+            <div *ngIf="m.text">{{ m.text }}</div>
+
+            <div *ngIf="m.attachments?.length">
+              <div *ngFor="let a of m.attachments" class="attachment-preview">
+                <img
+                  *ngIf="a.contentType?.startsWith('image')"
+                  [src]="attachmentUrl(activeConv._id, a.filename)"
+                  crossorigin="use-credentials"
+                />
+                <a
+                  *ngIf="!a.contentType?.startsWith('image')"
+                  [href]="attachmentUrl(activeConv._id, a.filename)"
+                  target="_blank"
+                  class="file-link"
+                >
+                  📄 {{ a.filename }}
+                </a>
+              </div>
+            </div>
+
+            <span class="msg-time">{{ m.createdAt | date : 'HH:mm' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <app-message-input (send)="onSendFromInput($event)"></app-message-input>
+      </div>
+    </div>
+  </div>
+</div>

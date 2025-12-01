@@ -1,36 +1,88 @@
-<div class="register-container">
-  <h2>S'inscrire</h2>
+<div class="auth-container">
+  <h2>Créer votre compte</h2>
+
   <form (ngSubmit)="register()">
-    <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+    <div *ngIf="successMessage" class="success-msg">
+      {{ successMessage }}
+    </div>
+
     <div *ngIf="!successMessage">
-      <div>
+      <div class="form-group">
         <label>Nom d'utilisateur</label>
-        <input name="username" [(ngModel)]="username" required />
+        <input
+          class="form-input"
+          name="username"
+          [(ngModel)]="username"
+          placeholder="Nom d'utilisateur"
+          required
+        />
       </div>
-      <div>
+
+      <div class="form-group">
+        <label>Tag (unique)</label>
+        <input
+          class="form-input"
+          name="tag"
+          [(ngModel)]="tag"
+          placeholder="ex: monTag_01"
+          required
+        />
+        <small class="muted">Le tag doit être unique (3-32 caractères, lettres/chiffres/_/-).</small>
+      </div>
+
+      <div class="form-group">
         <label>Email</label>
-        <input name="email" type="email" [(ngModel)]="email" required />
+        <input
+          class="form-input"
+          name="email"
+          type="email"
+          [(ngModel)]="email"
+          placeholder="Email"
+          required
+        />
       </div>
-      <div>
+
+      <div class="form-group">
         <label>Mot de passe</label>
-        <input name="password" type="password" [(ngModel)]="password" required />
+        <input
+          class="form-input"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          placeholder="Mot de passe (min. 12 char)"
+          required
+        />
       </div>
-      <div>
+
+      <div class="form-group">
         <label>Confirmer le mot de passe</label>
-        <input name="confirmPassword" type="password" [(ngModel)]="confirmPassword" required />
+        <input
+          class="form-input"
+          name="confirmPassword"
+          type="password"
+          [(ngModel)]="confirmPassword"
+          placeholder="Confirmer"
+          required
+        />
       </div>
-      <div>
-        <label>
-          <input type="checkbox" name="consent" [(ngModel)]="consent" required />
-          J'accepte que mes données soient utilisées pour l'inscription et la gestion de mon compte.
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="consentCheck" name="consent" [(ngModel)]="consent" required />
+        <label for="consentCheck">
+          J'accepte que mes données soient utilisées pour l'inscription et la gestion de mon compte
+          conformément aux conditions.
         </label>
       </div>
 
-      <div *ngIf="error" class="error">{{ error }}</div>
+      <div *ngIf="error" class="error-msg">
+        {{ error }}
+      </div>
 
-      <button type="submit" [disabled]="loading">{{ loading ? 'Enregistrement...' : 'S\'inscrire' }}</button>
+      <button type="submit" class="submit-btn" [disabled]="loading">
+        {{ loading ? 'Enregistrement...' : 'Suivant' }}
+      </button>
     </div>
   </form>
 
-  <p>Déjà inscrit ? <a href="/login">Se connecter</a></p>
+  <p class="auth-footer">Vous avez déjà un compte ? <a href="/login">Connectez-vous</a></p>
 </div>

@@ -216,11 +216,11 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Header `X-Content-Type-Options: nosniff`** présent dans les réponses HTTP
+- [X] **Header `X-Content-Type-Options: nosniff`** présent dans les réponses HTTP
 
-- [ ] **Header `X-Frame-Options: DENY`** (ou `SAMEORIGIN`) présent dans les réponses HTTP
+- [X] **Header `X-Frame-Options: DENY`** (ou `SAMEORIGIN`) présent dans les réponses HTTP
 
-- [ ] **HTTPS obligatoire** (même en dev/local)
+- [X] **HTTPS obligatoire** (même en dev/local)
   - Certificat auto-signé accepté (Mkcert, OpenSSL, ou Symfony CLI)
 
 **Preuves requises pour validation :**
@@ -235,20 +235,20 @@ Vous allez créer une **application Web complète** de votre choix (e-commerce, 
 
 **Fonctionnalités requises :**
 
-- [ ] **Fichier `.env`** en `.gitignore` (jamais push de secrets)
+- [X] **Fichier `.env`** en `.gitignore` (jamais push de secrets)
 
   - Variables : `DB_PASSWORD`, `API_KEY`, `JWT_SECRET`, etc.
 
-- [ ] **Fichier `.env.example`** dans le repo
+- [X] **Fichier `.env.example`** dans le repo
 
   - Montre les variables requises SANS les valeurs
 
-- [ ] **Aucun secret en clair dans le code source**
+- [X] **Aucun secret en clair dans le code source**
 
   - Vérifier : `grep -r "password\|api_key\|secret" src/` (doit être vide)
   - Vérifier : `git log` ne contient pas de secrets anciens
 
-- [ ] **Mode Production** séparé du mode Dev
+- [X] **Mode Production** séparé du mode Dev
   - Erreurs détaillées affichées localement seulement
   - En production : Messages d'erreur génériques
 
