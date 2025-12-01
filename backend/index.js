@@ -11,6 +11,7 @@ const sanitizeMiddleware = require("./middleware/sanitize");
 const adminRouter = require("./routes/admin");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
+const errorHandler = require("./middleware/errorHandler");
 
 dotenv.config();
 
@@ -41,6 +42,8 @@ app.use(sanitizeMiddleware);
 app.use("/api/admin", adminRouter);
 app.use("/api/users", usersRouter);
 app.use("/api", authRouter);
+
+app.use(errorHandler);
 
 // Connexion MongoDB et démarrage du serveur HTTPS
 const mongoUri = process.env.MONGODB_URI;
