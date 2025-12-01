@@ -1,9 +1,33 @@
-<div class="messages-page row" style="height:calc(100vh - 120px);gap:1rem;">
-  <div class="col left-panel card" style="width:320px;max-width:40vw;overflow:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+<div class="messages-page">
+  <div class="conversations-list">
+    <div class="conversations-header">
       <h5>Messages</h5>
-      <button (click)="startNewMessage()" class="btn-pill">Nouveau</button>
+      <button
+        (click)="startNewMessage()"
+        class="action-btn"
+        style="width: auto; padding: 8px 16px; margin: 0; font-size: 14px"
+      >
+        Nouveau
+      </button>
     </div>
+
+    <div
+      *ngFor="let c of conversations"
+      class="conversation-item"
+      [class.active]="activeConv && activeConv._id === c._id"
+      (click)="openConversation(c._id)"
+    >
+      <img
+        *ngIf="c.participants?.length"
+        [src]="avatarForConversation(c)"
+        class="conv-avatar"
+        (error)="$event.target.style.display = 'none'"
+      />
+
+      <div class="conv-info">
+        <div class="conv-name">{{ participantNames(c) }}</div>
+        <div class="conv-preview">
+          {{ c.lastMessage?.text || (c.lastMessage ? 'Pièce jointe' : 'Commencer la discussion') }}
     <div>
       <div *ngFor="let c of conversations" (click)="openConversation(c._id)" style="display:flex;align-items:center;gap:.6rem;padding:.5rem;border-bottom:1px solid #f0f0f0;cursor:pointer;">
         <img *ngIf="avatarForConversation(c)" [src]="avatarForConversation(c)" crossorigin="use-credentials" (error)="onAvatarError($event)" style="width:44px;height:44px;border-radius:8px;object-fit:cover" />
@@ -12,12 +36,49 @@
           <div class="small" style="color:#6b7280">{{ c.lastMessage?.text }}</div>
         </div>
       </div>
+
+      <div *ngIf="c.unread" class="conv-unread">{{ c.unread }}</div>
     </div>
   </div>
 
-  <div class="col right-panel card" style="flex:1;display:flex;flex-direction:column;">
-    <div *ngIf="!activeConv" class="center small" style="padding:2rem;">Sélectionnez une conversation</div>
+  <div class="chat-window">
+    <div *ngIf="!activeConv" class="empty-state">
+      <h3>Sélectionnez un message</h3>
+      <p>Choisissez une conversation existante ou commencez-en une nouvelle.</p>
+      <button
+        (click)="startNewMessage()"
+        class="action-btn"
+        style="width: auto; margin-top: 20px; padding: 12px 24px"
+      >
+        Nouveau message
+      </button>
+    </div>
 
+    <div *ngIf="activeConv" style="display: flex; flex-direction: column; height: 100%">
+      <div class="chat-header">
+        <img [src]="avatarForActiveConv()" class="conv-avatar" style="width: 36px; height: 36px" />
+        <h6>{{ participantNames(activeConv) }}</h6>
+      </div>
+
+      <div class="messages-list">
+        <div
+          *ngFor="let m of activeConv.messages"
+          [ngClass]="m.sender._id === currentUser?._id ? 'message-sent' : 'message-received'"
+          class="message-bubble"
+        >
+          <div *ngIf="m.text">{{ m.text }}</div>
+
+          <div *ngIf="m.attachments?.length" class="message-attachments">
+            <div *ngFor="let att of m.attachments">
+              <img
+                *ngIf="att.contentType.startsWith('image/')"
+                [src]="att.src"
+                class="attachment-image"
+              />
+              <div *ngIf="!att.contentType.startsWith('image/')" class="attachment-file">
+                Fichier ({{ att.contentType }})
+              </div>
+            </div>
     <div *ngIf="activeConv" style="display:flex;flex-direction:column;height:100%;">
       <div style="padding:.6rem;border-bottom:1px solid #eee;display:flex;align-items:center;gap:.6rem;">
         <img *ngIf="avatarForActiveConv()" [src]="avatarForActiveConv()" crossorigin="use-credentials" style="width:40px;height:40px;border-radius:8px;object-fit:cover" />
@@ -49,10 +110,12 @@
 
             <div class="small" style="color:#999;margin-top:.25rem">{{ m.createdAt | date:'short' }}</div>
           </div>
+
+          <span class="message-time">{{ m.createdAt | date : 'HH:mm' }}</span>
         </div>
       </div>
 
-      <div style="padding:0.6rem;border-top:1px solid #eee;">
+      <div class="chat-input-area">
         <app-message-input (send)="onSendFromInput($event)"></app-message-input>
       </div>
     </div>
