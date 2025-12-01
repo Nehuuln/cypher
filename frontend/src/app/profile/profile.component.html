@@ -4,6 +4,7 @@
   <div *ngIf="error" class="error">{{ error }}</div>
   <div *ngIf="!loading && user">
     <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="Avatar" style="max-width:150px;max-height:150px;border-radius:8px" /></div>
+    <p><strong>Tag:</strong> @{{ user.tag }}</p>
     <p><strong>Username:</strong> {{ user.username }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
     <p><strong>Roles:</strong> {{ user.roles?.join(', ') }}</p>

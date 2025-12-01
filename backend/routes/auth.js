@@ -31,20 +31,20 @@ function validatePasswordPolicy(password) {
 }
 
 // POST /api/register
-router.post("/register", async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, consent } = req.body;
+    const { username, email, password, consent, tag } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (!username || !email || !password || !tag) {
+      return res.status(400).json({ message: 'Missing required fields (username, email, password, tag, consent)' });
     }
 
     if (!consent) {
-      return res.status(400).json({ message: "Consentement requis pour l'inscription" });
+      return res.status(400).json({ message: 'Consentement requis pour l\'inscription' });
     }
 
     if (!validateEmail(email)) {
-      return res.status(400).json({ message: "Email invalide." });
+      return res.status(400).json({ message: 'Email invalide.' });
     }
 
     const passCheck = validatePasswordPolicy(password);
@@ -52,22 +52,33 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: passCheck.message });
     }
 
-    // Check existing user
-    const existing = await User.findOne({ $or: [{ email }, { username }] });
+    // Check existing user by email OR tag (do NOT enforce username uniqueness)
+    const existing = await User.findOne({ $or: [{ email }, { tag }] });
+
     if (existing) {
-      return res
-        .status(409)
-        .json({ message: "Username or email already taken" });
+      // explicit error depending on conflict
+      if (String(existing.email) === String(email)) {
+        return res.status(409).json({ message: 'Email déjà utilisé.' });
+      }
+      if (String(existing.tag) === String(tag)) {
+        return res.status(409).json({ message: 'Tag déjà utilisé. Choisissez un autre tag.' });
+      }
+      return res.status(409).json({ message: 'Identifiants déjà utilisés.' });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashed });
+    const user = new User({ username, email, password: hashed, tag });
     await user.save();
 
-    return res.status(201).json({ message: "User created", id: user._id });
+    return res.status(201).json({ message: 'User created', id: user._id });
   } catch (err) {
-    console.error("Register error:", err);
-    return res.status(500).json({ message: "Server error" });
+    console.error('Register error:', err);
+    // Handle duplicate key race (unique index) gracefully
+    if (err && err.code === 11000) {
+      const dupKey = Object.keys(err.keyPattern || {}).join(', ');
+      return res.status(409).json({ message: `Conflit: ${dupKey} déjà utilisé.` });
+    }
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

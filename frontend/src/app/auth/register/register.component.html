@@ -19,6 +19,18 @@
       </div>
 
       <div class="form-group">
+        <label>Tag (unique)</label>
+        <input
+          class="form-input"
+          name="tag"
+          [(ngModel)]="tag"
+          placeholder="ex: monTag_01"
+          required
+        />
+        <small class="muted">Le tag doit être unique (3-32 caractères, lettres/chiffres/_/-).</small>
+      </div>
+
+      <div class="form-group">
         <label>Email</label>
         <input
           class="form-input"

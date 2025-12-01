@@ -16,6 +16,7 @@ export class RegisterComponent {
   password: string = '';
   confirmPassword: string = '';
   consent: boolean = false;
+  tag: string = '';
   error: string | null = null;
   loading = false;
   successMessage: string | null = null;
@@ -53,6 +54,12 @@ export class RegisterComponent {
       return false;
     }
 
+    const tagRegex = /^[A-Za-z0-9_-]{3,32}$/;
+    if (!this.tag || !tagRegex.test(this.tag)) {
+      this.error = 'Tag invalide (3-32 caractères, lettres/chiffres/_/- autorisés).';
+      return false;
+    }
+
     return true;
   }
 
@@ -79,6 +86,7 @@ export class RegisterComponent {
       email: this.email,
       password: this.password,
       consent: this.consent,
+      tag: this.tag 
     };
     this.http.post<any>('https://localhost:3000/api/register', payload).subscribe({
       next: (res) => {
@@ -90,6 +98,7 @@ export class RegisterComponent {
         this.password = '';
         this.confirmPassword = '';
         this.consent = false;
+        this.tag = ''; 
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
@@ -97,9 +106,8 @@ export class RegisterComponent {
       error: (err) => {
         this.loading = false;
         if (err?.status === 409) {
-          this.error = "Nom d'utilisateur ou e-mail déjà utilisé.";
+          this.error = err?.error?.message || "Nom d'utilisateur, e-mail ou tag déjà utilisé.";
         } else if (err?.status === 400 && err?.error?.message) {
-          // show server validation message
           this.error = err.error.message;
         } else if (err?.error?.message) {
           this.error = err.error.message;
