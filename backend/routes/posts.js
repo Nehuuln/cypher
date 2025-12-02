@@ -15,7 +15,8 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB max
+// allow larger uploads for short videos (up to ~50MB)
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB max
 
 const allowedImageMime = ['image/jpeg', 'image/png'];
 const allowedVideoMime = ['video/mp4', 'video/webm', 'video/quicktime'];
@@ -101,11 +102,61 @@ router.get('/', async (req, res) => {
 router.get('/:id/media', async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await Post.findById(id).select('media');
+    const post = await Post.findById(id).select('media').lean();
     if (!post || !post.media || !post.media.data) return res.status(404).json({ message: 'Media not found' });
-    res.set('Content-Type', post.media.contentType || 'application/octet-stream');
-    res.set('Content-Disposition', `inline; filename="${post.media.filename || 'media'}"`);
-    return res.send(post.media.data);
+
+    // normalize stored data into a Buffer (support multiple mongoose/BSON shapes)
+    let dataBuf = null;
+    const md = post.media;
+    try {
+      if (Buffer.isBuffer(md.data)) {
+        dataBuf = md.data;
+      } else if (md.data && md.data.buffer) {
+        dataBuf = Buffer.from(md.data.buffer);
+      } else if (md.data && Array.isArray(md.data.data)) {
+        dataBuf = Buffer.from(md.data.data);
+      } else if (Array.isArray(md.data)) {
+        dataBuf = Buffer.from(md.data);
+      } else if (typeof md.data === 'string') {
+        try {
+          dataBuf = Buffer.from(md.data, 'base64');
+          if (!dataBuf || dataBuf.length === 0) dataBuf = Buffer.from(md.data);
+        } catch (e) {
+          dataBuf = Buffer.from(md.data);
+        }
+      }
+    } catch (e) {
+      console.error('Error normalizing post media data', e);
+    }
+
+    if (!dataBuf) {
+      console.warn('Post media data could not be normalized', { id });
+      return res.status(500).json({ message: 'Media data invalid' });
+    }
+
+    const total = dataBuf.length;
+    const contentType = md.contentType || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${md.filename || 'media'}"`);
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    const range = req.headers.range;
+    if (range && String(contentType).startsWith('video/')) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10) || 0;
+      const end = parts[1] ? parseInt(parts[1], 10) : total - 1;
+      if (isNaN(start) || isNaN(end) || start > end || start >= total) {
+        res.status(416).setHeader('Content-Range', `bytes */${total}`).end();
+        return;
+      }
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${total}`);
+      res.setHeader('Content-Length', end - start + 1);
+      return res.send(dataBuf.slice(start, end + 1));
+    }
+
+    res.setHeader('Content-Length', total);
+    return res.send(dataBuf);
   } catch (err) {
     console.error('GET /api/posts/:id/media error:', err);
     return res.status(500).json({ message: 'Server error' });

@@ -79,12 +79,15 @@ export class MessagesComponent implements OnInit {
     });
   }
 
-  // Helper: build avatar URL for a conversation (avoids complex template expressions)
   avatarForConversation(conv: any): string {
     if (!conv?.participants?.length) return '';
-    const other = conv.participants.find((p: any) => String(p._id) !== String(this.currentUser?._id));
-    const id = other?._id || conv.participants[0]._id;
-    return `${this.baseUrl}/api/users/${id}/avatar`;
+    const other = conv.participants.find((p: any) => {
+      const pid = this.getEntityId(p);
+      const meId = this.getEntityId(this.currentUser);
+      return pid && meId ? String(pid) !== String(meId) : !!pid;
+    });
+    const id = this.getEntityId(other) || this.getEntityId(conv.participants[0]);
+    return id ? `${this.baseUrl}/api/users/${id}/avatar` : '';
   }
 
   avatarUrlForUser(user: any): string {
@@ -94,10 +97,13 @@ export class MessagesComponent implements OnInit {
 
   participantNames(conv: any): string {
     if (!conv?.participants?.length) return '';
-    return conv.participants
-      .map((p: any) => p.username)
-      .filter((u: string) => u !== this.currentUser?.username)
-      .join(', ');
+    const meUsername = this.currentUser?.username;
+    const usernames = conv.participants
+      .map((p: any) => (p && typeof p === 'object' ? p.username : null))
+      .filter((u: string | null) => !!u && u !== meUsername)
+      .map((u: string) => u!.trim());
+
+    return usernames.join(', ');
   }
 
   avatarForActiveConv(): string {
@@ -108,6 +114,17 @@ export class MessagesComponent implements OnInit {
     if (!convId) return '';
     const base = `${this.baseUrl}/api/messages/${convId}/attachments`;
     return filename ? `${base}/${encodeURIComponent(filename)}` : `${base}/`;
+  }
+
+  // new helpers
+  isImage(a: any): boolean {
+    return !!(a && a.contentType && String(a.contentType).startsWith('image/'));
+  }
+  isVideo(a: any): boolean {
+    return !!(a && a.contentType && String(a.contentType).startsWith('video/'));
+  }
+  isPdf(a: any): boolean {
+    return !!(a && a.contentType && String(a.contentType) === 'application/pdf');
   }
 
   onAvatarError(event: any) {
