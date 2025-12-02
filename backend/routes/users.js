@@ -45,11 +45,33 @@ router.get(
 router.get("/:id/avatar", async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id).select("avatar");
-    if (!user || !user.avatar || !user.avatar.data) return res.status(404).json({ message: "Avatar not found" });
+    const user = await User.findById(id).select("avatar").lean();
+    if (!user || !user.avatar || !user.avatar.data) {
+      return res.status(404).json({ message: "Avatar not found" });
+    }
+
+    const ad = user.avatar.data;
+    let buf = null;
+    if (Buffer.isBuffer(ad)) {
+      buf = ad;
+    } else if (ad && ad.buffer) {
+      buf = Buffer.from(ad.buffer);
+    } else if (ad && Array.isArray(ad.data)) {
+      buf = Buffer.from(ad.data);
+    } else if (Array.isArray(ad)) {
+      buf = Buffer.from(ad);
+    } else {
+      console.error("GET /api/users/:id/avatar: unknown avatar.data format", typeof ad);
+      return res.status(500).json({ message: "Invalid avatar data" });
+    }
+
     res.set("Content-Type", user.avatar.contentType || "application/octet-stream");
-    res.set("Content-Disposition", `inline; filename="${user.avatar.filename || 'avatar'}"`);
-    return res.send(user.avatar.data);
+    res.set(
+      "Content-Disposition",
+      `inline; filename="${user.avatar.filename || "avatar"}"`
+    );
+    res.set("Content-Length", String(buf.length));
+    return res.send(buf);
   } catch (err) {
     console.error("GET /api/users/:id/avatar error:", err);
     return res.status(500).json({ message: "Server error" });

@@ -88,20 +88,41 @@
           <div class="msg-bubble">
             <div *ngIf="m.text">{{ m.text }}</div>
 
-            <div *ngIf="m.attachments?.length">
+            <!-- attachments -->
+            <div *ngIf="m.attachments?.length" class="attachments">
               <div *ngFor="let a of m.attachments" class="attachment-preview">
+                <video
+                  *ngIf="isVideo(a)"
+                  [src]="attachmentUrl(activeConv._id, a.filename)"
+                  controls
+                  crossorigin="use-credentials"
+                  style="max-width:320px; max-height:240px;"
+                ></video>
+
                 <img
-                  *ngIf="a.contentType?.startsWith('image')"
+                  *ngIf="isImage(a)"
                   [src]="attachmentUrl(activeConv._id, a.filename)"
                   crossorigin="use-credentials"
+                  alt="attachment"
+                  style="max-width:320px; max-height:240px; display:block;"
                 />
+
                 <a
-                  *ngIf="!a.contentType?.startsWith('image')"
+                  *ngIf="isPdf(a)"
                   [href]="attachmentUrl(activeConv._id, a.filename)"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="file-link"
                 >
-                  📄 {{ a.filename }}
+                  Voir le PDF
+                </a>
+
+                <a
+                  *ngIf="!isImage(a) && !isVideo(a) && !isPdf(a)"
+                  [href]="attachmentUrl(activeConv._id, a.filename)"
+                  class="file-link"
+                >
+                  Télécharger
                 </a>
               </div>
             </div>
