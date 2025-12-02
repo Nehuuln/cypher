@@ -21,4 +21,7 @@ export const routes: Routes = [
   { path: 'profil/user/:id', component: ProfileComponent },
   { path: 'profil/user/tag', component: ProfilePublicComponent },
   { path: 'profil/user/tag/:tag', component: ProfilePublicComponent },
+  { path: 'legal', component: LegalComponent },
+  { path: 'messages', component: MessagesComponent, canActivate: [AuthGuard] },
+  { path: 'create', component: CreatePostComponent, canActivate: [AuthGuard] },
 ];

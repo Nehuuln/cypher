@@ -89,53 +89,87 @@ router.put(
       const { id } = req.params;
       const updates = {};
 
-      // username validation
-      if (req.body.username !== undefined) {
-        if (
-          typeof req.body.username !== "string" ||
-          req.body.username.trim().length < 3
-        ) {
-          return res
-            .status(400)
-            .json({ message: "Username invalide (min 3 caractères)." });
-        }
-        updates.username = req.body.username.trim();
+      // tag is not editable
+      if (req.body.tag !== undefined) {
+        return res.status(400).json({ message: "Tag cannot be modified." });
       }
 
-      // email validation
+      // username validation & uniqueness
+      if (req.body.username !== undefined) {
+        if (typeof req.body.username !== "string" || req.body.username.trim().length < 3) {
+          return res.status(400).json({ message: "Username invalide (min 3 caractères)." });
+        }
+        const usernameTrim = req.body.username.trim();
+        const exists = await User.findOne({ username: usernameTrim, _id: { $ne: id } }).lean();
+        if (exists) return res.status(409).json({ message: "Username déjà utilisé." });
+        updates.username = usernameTrim;
+      }
+
+      // email validation & uniqueness
       if (req.body.email !== undefined) {
-        if (
-          typeof req.body.email !== "string" ||
-          !emailRegex.test(req.body.email)
-        ) {
+        if (typeof req.body.email !== "string" || !emailRegex.test(req.body.email)) {
           return res.status(400).json({ message: "Email invalide." });
         }
-        updates.email = req.body.email.toLowerCase().trim();
+        const emailNorm = req.body.email.toLowerCase().trim();
+        const exists = await User.findOne({ email: emailNorm, _id: { $ne: id } }).lean();
+        if (exists) return res.status(409).json({ message: "Email déjà utilisé." });
+        updates.email = emailNorm;
       }
 
-      // bio validation + sanitation (empêche <script> stocké)
+      // password (optional) -> require oldPassword (unless admin), validate minimal policy then hash
+      if (req.body.password !== undefined && req.body.password !== "") {
+        const pw = String(req.body.password);
+
+        // check old password provided unless admin
+        const requesterRoles = Array.isArray(req.user?.roles) ? req.user.roles : [];
+        const isAdmin = requesterRoles.some(r => String(r).toLowerCase() === 'admin' || String(r).toLowerCase() === 'administrator');
+
+        if (!isAdmin) {
+          if (!req.body.oldPassword) {
+            return res.status(400).json({ message: 'Ancien mot de passe requis pour changer le mot de passe.' });
+          }
+          // verify old password
+          const existing = await User.findById(id).select('password').lean();
+          if (!existing) return res.status(404).json({ message: 'User not found' });
+          const bcrypt = require('bcryptjs');
+          const ok = await bcrypt.compare(String(req.body.oldPassword), existing.password);
+          if (!ok) {
+            return res.status(401).json({ message: 'Ancien mot de passe incorrect.' });
+          }
+        }
+
+        if (pw.length < 12) {
+          return res.status(400).json({ message: "Le mot de passe doit contenir au moins 12 caractères." });
+        }
+        // simple complexity check (client already enforces); server-side minimal check
+        let classes = 0;
+        if (/[A-Z]/.test(pw)) classes++;
+        if (/[a-z]/.test(pw)) classes++;
+        if (/\d/.test(pw)) classes++;
+        if (/[^A-Za-z0-9]/.test(pw)) classes++;
+        if (classes < 3) {
+          return res.status(400).json({ message: "Mot de passe doit contenir au moins 3 types de caractères." });
+        }
+        const hashed = await require("bcryptjs").hash(pw, 10);
+        updates.password = hashed;
+      }
+
+      // bio -> sanitize / escape
       if (req.body.bio !== undefined) {
-        if (typeof req.body.bio !== "string") {
-          return res.status(400).json({ message: "Bio invalide." });
-        }
-        if (req.body.bio.length > 1000) {
-          return res
-            .status(400)
-            .json({ message: "Bio trop longue (max 1000 caractères)." });
-        }
+        if (typeof req.body.bio !== "string") return res.status(400).json({ message: "Bio invalide." });
+        if (req.body.bio.length > 1000) return res.status(400).json({ message: "Bio trop longue (max 1000 caractères)." });
         updates.bio = escapeHtml(req.body.bio);
       }
 
+      // avatar file (optional)
       if (req.file) {
         const ft = await fileTypeFromBuffer(req.file.buffer);
-        const allowedMime = ["image/jpeg", "image/png", "application/pdf"];
+        const allowedMime = ["image/jpeg", "image/png"];
         if (!ft || !allowedMime.includes(ft.mime)) {
-          return res.status(400).json({ message: "Fichier non autorisé (mimetype invalide)." });
+          return res.status(400).json({ message: "Fichier non autorisé (mimetype invalide). Seuls JPG/PNG." });
         }
-
-        const ext = ft.ext; // 'jpg', 'png', 'pdf'
+        const ext = ft.ext;
         const filename = `${uuidv4()}.${ext}`;
-
         updates.avatar = {
           data: req.file.buffer,
           contentType: ft.mime,
@@ -144,9 +178,7 @@ router.put(
         };
       }
 
-      const user = await User.findByIdAndUpdate(id, updates, {
-        new: true,
-      }).select("-password");
+      const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password").lean();
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.json({ user });
     } catch (err) {

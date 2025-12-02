@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-profile-public',
@@ -18,7 +19,11 @@ export class ProfilePublicComponent implements OnInit {
   error: string | null = null;
   private baseUrl = 'https://localhost:3000';
 
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router) {}
+  currentUser: any = null;
+
+  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private auth: AuthService) {
+    this.auth.currentUser$.subscribe(u => this.currentUser = u);
+  }
 
   ngOnInit() {
     const paramTag = this.route.snapshot.paramMap.get('tag');
@@ -44,7 +49,6 @@ export class ProfilePublicComponent implements OnInit {
         this.profile = res.user;
         this.loading = false;
         if (this.profile?._id) {
-          // avatar served by existing route /api/users/:id/avatar
           this.avatarUrl = `${this.baseUrl}/api/users/${this.profile._id}/avatar`;
         }
       },
@@ -53,5 +57,16 @@ export class ProfilePublicComponent implements OnInit {
         this.error = err?.error?.message || 'Utilisateur introuvable';
       }
     });
+  }
+
+  isOwner(): boolean {
+    if (!this.currentUser || !this.profile) return false;
+    const me = this.currentUser._id ?? this.currentUser.id;
+    return String(me) === String(this.profile._id);
+  }
+
+  editProfile() {
+    if (!this.profile?._id) return;
+    this.router.navigate(['/profil/user', this.profile._id]);
   }
 }

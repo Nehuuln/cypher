@@ -14,7 +14,10 @@
         <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="avatar" style="max-width:150px;border-radius:8px" crossorigin="use-credentials" /></div>
         <p><strong>Tag</strong>: @{{ profile.tag }}</p>
         <p><strong>Username</strong>: {{ profile.username }}</p>
-        <p *ngIf="profile.bio"><strong>Bio</strong>: {{ profile.bio }}</p>
+        <p><strong>Bio</strong>: {{ profile.bio }}</p>
         <p><small>Inscrit le {{ profile.createdAt | date:'short' }}</small></p>
+        <div style="margin-top:8px">
+          <button *ngIf="isOwner()" class="btn-primary" (click)="editProfile()">Éditer</button>
+        </div>
       </div>
     </div>
