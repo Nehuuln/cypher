@@ -17,14 +17,16 @@ export class ProfileRedirectComponent implements OnInit {
   ngOnInit() {
     this.http.get<any>(`${this.baseUrl}/api/me`, { withCredentials: true }).subscribe({
       next: (res) => {
-        const myId = res.user?._id || res.user?.id;
-        if (myId) {
-          this.router.navigate(['/profil/user', myId]);
+        const tag = res.user?.tag;
+        if (tag) {
+          this.router.navigate(['/profil/user/tag', tag]);
         } else {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/profil/user/tag']);
         }
       },
-      error: () => this.router.navigate(['/login']),
+      error: () => {
+        this.router.navigate(['/profil/user/tag']);
+      },
     });
   }
 }

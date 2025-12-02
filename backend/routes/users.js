@@ -156,4 +156,23 @@ router.put(
   }
 );
 
+// Public GET /api/users/tag/:tag -> profile public by tag (no auth)
+router.get('/tag/:tag', async (req, res) => {
+  try {
+    const tag = (req.params.tag || '').toString().trim();
+    if (!tag) return res.status(400).json({ message: 'Tag manquant' });
+
+    const user = await User.findOne({ tag })
+      .select('_id username tag bio createdAt') 
+      .lean();
+
+    if (!user) return res.status(404).json({ message: 'Utilisateur introuvable' });
+
+    return res.json({ user });
+  } catch (err) {
+    console.error('GET /api/users/tag/:tag error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
