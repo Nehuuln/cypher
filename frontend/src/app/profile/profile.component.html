@@ -4,15 +4,51 @@
   <div *ngIf="error" class="error">{{ error }}</div>
   <div *ngIf="!loading && user">
     <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="Avatar" style="max-width:150px;max-height:150px;border-radius:8px" /></div>
-    <p><strong>Tag:</strong> @{{ user.tag }}</p>
-    <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Roles:</strong> {{ user.roles?.join(', ') }}</p>
 
-    <div>
-      <label>Changer avatar</label>
-      <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onFileSelected($event)" />
-      <button (click)="uploadAvatar()" [disabled]="!selectedFile">Upload</button>
-    </div>
+    <form (ngSubmit)="saveProfile()">
+      <div>
+        <label>Tag (public)</label>
+        <input class="form-input" type="text" [value]="user.tag" disabled />
+      </div>
+
+      <div>
+        <label>Username</label>
+        <input class="form-input" type="text" [(ngModel)]="form.username" name="username" />
+      </div>
+
+      <div>
+        <label>Email</label>
+        <input class="form-input" type="email" [(ngModel)]="form.email" name="email" />
+      </div>
+
+      <div>
+        <label>Ancien mot de passe (obligatoire pour changer)</label>
+        <input class="form-input" type="password" [(ngModel)]="form.oldPassword" name="oldPassword" />
+      </div>
+
+      <div>
+        <label>Nouveau mot de passe</label>
+        <input class="form-input" type="password" [(ngModel)]="form.password" name="password" />
+      </div>
+
+      <div>
+        <label>Confirmer mot de passe</label>
+        <input class="form-input" type="password" [(ngModel)]="form.passwordConfirm" name="passwordConfirm" />
+      </div>
+
+      <div>
+        <label>Bio</label>
+        <textarea [(ngModel)]="form.bio" name="bio" rows="4"></textarea>
+      </div>
+
+      <div>
+        <label>Changer avatar</label>
+        <input type="file" accept=".jpg,.jpeg,.png" (change)="onFileSelected($event)" />
+      </div>
+
+      <div style="margin-top:12px">
+        <button type="submit" [disabled]="saving">{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</button>
+      </div>
+    </form>
   </div>
 </div>

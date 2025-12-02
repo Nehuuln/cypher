@@ -1,0 +1,23 @@
+<div class="profile-public">
+      <h2>Profil public</h2>
+
+      <div style="margin-bottom:12px;">
+        <label>Tag public</label>
+        <input [(ngModel)]="tagInput" placeholder="ex: monTag_01" />
+        <button (click)="viewByTag()" [disabled]="loading">Voir</button>
+      </div>
+
+      <div *ngIf="loading">Chargement...</div>
+      <div *ngIf="error" class="error">{{ error }}</div>
+
+      <div *ngIf="profile">
+        <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="avatar" style="max-width:150px;border-radius:8px" crossorigin="use-credentials" /></div>
+        <p><strong>Tag</strong>: @{{ profile.tag }}</p>
+        <p><strong>Username</strong>: {{ profile.username }}</p>
+        <p><strong>Bio</strong>: {{ profile.bio }}</p>
+        <p><small>Inscrit le {{ profile.createdAt | date:'short' }}</small></p>
+        <div style="margin-top:8px">
+          <button *ngIf="isOwner()" class="btn-primary" (click)="editProfile()">Éditer</button>
+        </div>
+      </div>
+    </div>
