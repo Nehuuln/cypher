@@ -67,14 +67,16 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post('/start', authMiddleware, async (req, res) => {
   try {
     const me = req.user.id;
-    const otherId = req.body.userId;
-    if (!otherId) return res.status(400).json({ message: 'Missing userId' });
-    if (String(otherId) === String(me)) return res.status(400).json({ message: 'Cannot start conversation with yourself' });
-    const other = await User.findById(otherId).select('_id username');
-    if (!other) return res.status(404).json({ message: 'User not found' });
-    let conv = await Conversation.findOne({ participants: { $all: [me, otherId], $size: 2 } });
+    const otherTag = (req.body.tag || '').toString().trim();
+    if (!otherTag) return res.status(400).json({ message: 'Missing tag' });
+    // find user by tag instead of by id
+    const other = await User.findOne({ tag: otherTag }).select('_id username');
+    if (!other) return res.status(404).json({ message: 'User not found (by tag)' });
+    if (String(other._id) === String(me)) return res.status(400).json({ message: 'Cannot start conversation with yourself' });
+
+    let conv = await Conversation.findOne({ participants: { $all: [me, other._id], $size: 2 } });
     if (!conv) {
-      conv = new Conversation({ participants: [me, otherId], messages: [] });
+      conv = new Conversation({ participants: [me, other._id], messages: [] });
       await conv.save();
     }
     return res.status(201).json({ conversationId: conv._id });

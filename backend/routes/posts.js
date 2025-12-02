@@ -102,7 +102,7 @@ router.get('/', async (req, res) => {
     const out = posts.map(p => ({
       ...p,
       likesCount: (p.likes || []).length,
-      likedByMe: false // front can compute if user known; optional to set server-side if auth provided
+      likedByMe: false 
     }));
 
     return res.json({ posts: out });
@@ -155,7 +155,6 @@ router.post('/:id/comment', authMiddleware, async (req, res) => {
       .lean();
     if (!updated) return res.status(404).json({ message: 'Post not found' });
 
-    // return the newly added comment (last one)
     const added = (updated.comments || []).slice(-1)[0];
     return res.status(201).json({ comment: added });
   } catch (err) {

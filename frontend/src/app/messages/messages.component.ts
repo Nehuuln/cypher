@@ -17,6 +17,11 @@ export class MessagesComponent implements OnInit {
   activeConv: any = null;
   currentUser: any = null;
   loading = false;
+  // start conversation modal state
+  showStartModal = false;
+  startTag: string = '';
+  startError: string | null = null;
+  startLoading = false;
   private baseUrl = 'https://localhost:3000';
 
   constructor(private svc: MessagesService, private auth: AuthService) {}
@@ -62,11 +67,38 @@ export class MessagesComponent implements OnInit {
   }
 
   startNewMessage() {
-    const userId = prompt('User ID to message (quick):');
-    if (!userId) return;
-    this.svc.startConversation(userId).subscribe(res => {
-      this.openConversation(res.conversationId);
-      this.loadConversations();
+    this.startTag = '';
+    this.startError = null;
+    this.showStartModal = true;
+  }
+
+  closeStartModal() {
+    this.showStartModal = false;
+    this.startLoading = false;
+  }
+
+  submitStartConversation() {
+    const tag = (this.startTag || '').toString().trim();
+    if (!tag) {
+      this.startError = 'Veuillez indiquer le tag de l\'utilisateur.';
+      return;
+    }
+    this.startError = null;
+    this.startLoading = true;
+    this.svc.startConversation(tag).subscribe({
+      next: (res) => {
+        this.startLoading = false;
+        if (res && res.conversationId) {
+          this.openConversation(res.conversationId);
+          this.loadConversations();
+          this.closeStartModal();
+        }
+      },
+      error: (err) => {
+        this.startLoading = false;
+        console.warn('startConversation error', err);
+        this.startError = err?.error?.message || 'Impossible de démarrer la conversation';
+      }
     });
   }
 

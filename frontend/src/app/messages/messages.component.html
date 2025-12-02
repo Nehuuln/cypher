@@ -138,3 +138,17 @@
     </div>
   </div>
 </div>
+
+<!-- Start conversation modal -->
+<div *ngIf="showStartModal" class="start-modal-overlay" (click)="closeStartModal()">
+  <div class="start-modal" (click)="$event.stopPropagation()">
+    <h3>Nouveau message</h3>
+    <p>Entrez le <strong>tag</strong> de l'utilisateur que vous voulez contacter.</p>
+    <div class="start-modal-body" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <input class="start-modal-input" type="text" [(ngModel)]="startTag" name="startTag" placeholder="tag_exemple_01" />
+      <button class="btn-primary" (click)="submitStartConversation()" [disabled]="startLoading">{{ startLoading ? 'Envoi...' : 'Démarrer' }}</button>
+    </div>
+    <div *ngIf="startError" class="error-msg" style="margin-top:8px">{{ startError }}</div>
+    <div class="actions" style="margin-top:12px;text-align:right"><button class="btn-secondary" (click)="closeStartModal()">Annuler</button></div>
+  </div>
+</div>

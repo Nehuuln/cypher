@@ -35,8 +35,8 @@ export class MessagesService implements OnDestroy {
     return this.http.get<any>(`${this.base}/api/messages`, { withCredentials: true });
   }
 
-  startConversation(userId: string) {
-    return this.http.post<any>(`${this.base}/api/messages/start`, { userId }, { withCredentials: true });
+  startConversation(tag: string) {
+    return this.http.post<any>(`${this.base}/api/messages/start`, { tag }, { withCredentials: true });
   }
 
   getConversation(convId: string) {
