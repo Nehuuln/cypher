@@ -89,12 +89,77 @@ router.post('/', authMiddleware, upload.single('media'), async (req, res) => {
   }
 });
 
+// GET /api/posts -> list posts (include likes count and comments populated)
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find().select('-media.data').sort({ createdAt: -1 }).populate('author', 'username');
-    return res.json({ posts });
+    const posts = await Post.find()
+      .select('-media.data')
+      .sort({ createdAt: -1 })
+      .populate('author', 'username')
+      .populate('comments.author', 'username')
+      .lean();
+
+    const out = posts.map(p => ({
+      ...p,
+      likesCount: (p.likes || []).length,
+      likedByMe: false // front can compute if user known; optional to set server-side if auth provided
+    }));
+
+    return res.json({ posts: out });
   } catch (err) {
     console.error('GET /api/posts error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/posts/:id/like -> add like (auth)
+router.post('/:id/like', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    const updated = await Post.findByIdAndUpdate(postId, { $addToSet: { likes: userId } }, { new: true }).select('likes').lean();
+    if (!updated) return res.status(404).json({ message: 'Post not found' });
+    return res.json({ likesCount: (updated.likes || []).length });
+  } catch (err) {
+    console.error('POST /api/posts/:id/like error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/posts/:id/unlike -> remove like (auth)
+router.post('/:id/unlike', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    const updated = await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } }, { new: true }).select('likes').lean();
+    if (!updated) return res.status(404).json({ message: 'Post not found' });
+    return res.json({ likesCount: (updated.likes || []).length });
+  } catch (err) {
+    console.error('POST /api/posts/:id/unlike error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/posts/:id/comment -> add comment (auth)
+router.post('/:id/comment', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    const text = (req.body.text || '').toString().trim();
+    if (!text) return res.status(400).json({ message: 'Comment text required' });
+
+    const comment = { author: userId, text, createdAt: new Date() };
+    const updated = await Post.findByIdAndUpdate(postId, { $push: { comments: comment } }, { new: true })
+      .populate('comments.author', 'username')
+      .select('comments')
+      .lean();
+    if (!updated) return res.status(404).json({ message: 'Post not found' });
+
+    // return the newly added comment (last one)
+    const added = (updated.comments || []).slice(-1)[0];
+    return res.status(201).json({ comment: added });
+  } catch (err) {
+    console.error('POST /api/posts/:id/comment error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 });
@@ -105,7 +170,6 @@ router.get('/:id/media', async (req, res) => {
     const post = await Post.findById(id).select('media').lean();
     if (!post || !post.media || !post.media.data) return res.status(404).json({ message: 'Media not found' });
 
-    // normalize stored data into a Buffer (support multiple mongoose/BSON shapes)
     let dataBuf = null;
     const md = post.media;
     try {

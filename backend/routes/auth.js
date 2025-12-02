@@ -56,7 +56,6 @@ router.post('/register', async (req, res) => {
     const existing = await User.findOne({ $or: [{ email }, { tag }] });
 
     if (existing) {
-      // explicit error depending on conflict
       if (String(existing.email) === String(email)) {
         return res.status(409).json({ message: 'Email déjà utilisé.' });
       }
@@ -111,12 +110,13 @@ router.post("/login", async (req, res) => {
     const token = `${base}.${sig}`;
 
     // set cookie
+    const sessionMinutes = parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 30;
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      secure: true,
+      sameSite: "None",
       path: "/",
-      maxAge: 1000 * 60 * 1, // 30 minutes
+      maxAge: sessionMinutes * 60 * 1000,
     });
 
     return res.status(200).json({ message: "Authentifié" });
@@ -130,8 +130,8 @@ router.post("/login", async (req, res) => {
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    secure: true,
+    sameSite: "None",
     path: "/",
   });
   return res.status(200).json({ message: "Déconnecté" });
@@ -139,7 +139,6 @@ router.post("/logout", (req, res) => {
 
 // Protected route example
 router.get("/me", authMiddleware, async (req, res) => {
-  // req.user is set by middleware
   const { id } = req.user || {};
   try {
     const user = await User.findById(id).select("-password");
