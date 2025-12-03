@@ -1,35 +1,72 @@
-<div class="admin-dashboard">
-  <h2>Admin Dashboard</h2>
-  <div *ngIf="error" class="error">{{ error }}</div>
-  <div *ngIf="loading">Chargement...</div>
-  <table *ngIf="!loading && users.length">
-    <thead>
-      <tr>
-        <th>Avatar</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Roles</th>
-        <th>ID</th>
-        <th>Tag</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let u of users">
-        <td><img [src]="'https://localhost:3000/api/users/' + u._id + '/avatar'" alt="Avatar" style="max-width:50px;max-height:50px;border-radius:4px" /></td>
-        <td>{{ u.username }}</td>
-        <td>{{ u.email }}</td>
-        <td>{{ u.roles?.join(', ') }}</td>
-        <td>{{ u._id }}</td>
-        <td>{{ u.tag }}</td>
-        <td>
-          <a [routerLink]="['/profil/user/tag', u.tag]" title="Voir le profil" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:inherit">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-              <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16zm0-6a2 2 0 1 0 .001 4.001A2 2 0 0 0 12 10z"/>
-            </svg>
-          </a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <div *ngIf="!loading && users.length === 0">Aucun utilisateur.</div>
+<div class="admin-dashboard page-content">
+  <div class="admin-header">
+    <h2>Tableau de bord</h2>
+  </div>
+
+  <div *ngIf="error" class="error-msg">{{ error }}</div>
+  <div *ngIf="loading" class="loading-msg">Chargement des utilisateurs...</div>
+
+  <div class="table-responsive" *ngIf="!loading && users.length">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôles</th>
+          <th>Contact</th>
+          <th>ID Technique</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users" class="user-row">
+          <td>
+            <div class="user-cell">
+              <img
+                [src]="'https://localhost:3000/api/users/' + u._id + '/avatar'"
+                alt="Avatar"
+                class="admin-avatar"
+                (error)="$event.target.style.display = 'none'"
+              />
+              <div class="user-info">
+                <span class="user-name">{{ u.username }}</span>
+                <span class="user-tag">@{{ u.tag }}</span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <div class="roles-wrapper">
+              <span
+                *ngFor="let role of u.roles"
+                class="role-badge"
+                [class.admin]="role === 'admin'"
+              >
+                {{ role | uppercase }}
+              </span>
+            </div>
+          </td>
+
+          <td class="email-cell">{{ u.email }}</td>
+
+          <td class="id-cell" title="{{ u._id }}">{{ u._id }}</td>
+
+          <td>
+            <a
+              [routerLink]="['/profil/user/tag', u.tag]"
+              title="Voir le profil"
+              class="icon-action"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path
+                  d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16zm0-6a2 2 0 1 0 .001 4.001A2 2 0 0 0 12 10z"
+                />
+              </svg>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && users.length === 0" class="empty-state">Aucun utilisateur trouvé.</div>
 </div>
