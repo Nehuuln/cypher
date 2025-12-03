@@ -5,16 +5,35 @@
 
   <div *ngFor="let p of posts" class="post">
     <div class="post-header">
-      <img
-        *ngIf="p.author"
-        [src]="avatarUrl(p.author)"
-        class="avatar"
-        crossorigin="use-credentials"
-        (error)="$event.target.style.display = 'none'"
-      />
+      <a
+        [routerLink]="['/profil/user/tag', p.author?.tag]"
+        style="cursor: pointer; text-decoration: none"
+      >
+        <img
+          *ngIf="p.author"
+          [src]="avatarUrl(p.author)"
+          class="avatar"
+          crossorigin="use-credentials"
+          (error)="$event.target.style.display = 'none'"
+        />
+      </a>
+
       <div class="author-info">
-        <span class="username">{{ p.author?.username }}</span>
-        <span class="handle">@{{ p.author?.username }}</span>
+        <a
+          [routerLink]="['/profil/user/tag', p.author?.tag]"
+          style="color: inherit; text-decoration: none"
+        >
+          <span class="username" style="cursor: pointer">{{ p.author?.username }}</span>
+        </a>
+
+        <a
+          [routerLink]="['/profil/user/tag', p.author?.tag]"
+          class="handle"
+          style="text-decoration: none"
+        >
+          @{{ p.author?.tag }}
+        </a>
+
         <span class="date">· {{ p.createdAt | date : 'd MMM' }}</span>
       </div>
     </div>

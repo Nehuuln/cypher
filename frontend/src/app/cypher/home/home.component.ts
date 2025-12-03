@@ -2,15 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, switchMap, take } from 'rxjs/operators';
-import { AuthService } from '../../auth/auth.service'; 
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, HttpClientModule, FormsModule, RouterModule],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
@@ -49,14 +49,16 @@ export class HomeComponent implements OnInit {
         this.posts = res.posts ?? [];
         if (this.currentUser) {
           const me = this.currentUser._id ?? this.currentUser.id;
-          this.posts.forEach(p => p.likedByMe = (p.likes || []).some((x:any) => String(x) === String(me)));
+          this.posts.forEach(
+            (p) => (p.likedByMe = (p.likes || []).some((x: any) => String(x) === String(me)))
+          );
         }
         this.loading = false;
       },
       error: (err) => {
         this.error = err?.error?.message || 'Erreur';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -73,13 +75,17 @@ export class HomeComponent implements OnInit {
     if (post.likedByMe !== undefined) return post.likedByMe;
     if (!this.currentUser) return false;
     const me = this.currentUser._id ?? this.currentUser.id;
-    return (post.likes || []).some((x:any) => String(x) === String(me));
+    return (post.likes || []).some((x: any) => String(x) === String(me));
   }
 
   toggleLike(post: any) {
     if (!this.currentUser) {
-      this.auth.me()
-        .pipe(take(1), catchError(() => of(null)))
+      this.auth
+        .me()
+        .pipe(
+          take(1),
+          catchError(() => of(null))
+        )
         .subscribe((res: any) => {
           const user = res?.user ?? res ?? null;
           if (!user) {
@@ -106,25 +112,30 @@ export class HomeComponent implements OnInit {
       error: (err) => {
         this.likeProcessing[postId] = false;
         if (err?.status === 401) this.router.navigate(['/login']);
-      }
+      },
     });
   }
 
   addComment(post: any) {
-    if (!this.currentUser) { this.router.navigate(['/login']); return; }
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
     const text = (this.newComment[post._id] || '').trim();
     if (!text) return;
     const postId = post._id;
-    this.http.post<any>(`${this.baseUrl}/api/posts/${postId}/comment`, { text }, { withCredentials: true }).subscribe({
-      next: (res) => {
-        post.comments = post.comments || [];
-        post.comments.push(res.comment);
-        this.newComment[post._id] = '';
-      },
-      error: (err) => {
-        console.error('Comment error', err);
-      }
-    });
+    this.http
+      .post<any>(`${this.baseUrl}/api/posts/${postId}/comment`, { text }, { withCredentials: true })
+      .subscribe({
+        next: (res) => {
+          post.comments = post.comments || [];
+          post.comments.push(res.comment);
+          this.newComment[post._id] = '';
+        },
+        error: (err) => {
+          console.error('Comment error', err);
+        },
+      });
   }
 
   openComments(post: any) {
@@ -142,7 +153,9 @@ export class HomeComponent implements OnInit {
 
   sortedComments(post: any) {
     const cs = post.comments || [];
-    return cs.slice().sort((a:any,b:any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    return cs
+      .slice()
+      .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }
 
   onAvatarError(ev: Event) {

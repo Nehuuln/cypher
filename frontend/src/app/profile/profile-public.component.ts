@@ -21,8 +21,13 @@ export class ProfilePublicComponent implements OnInit {
 
   currentUser: any = null;
 
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private auth: AuthService) {
-    this.auth.currentUser$.subscribe(u => this.currentUser = u);
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
+    private auth: AuthService
+  ) {
+    this.auth.currentUser$.subscribe((u) => (this.currentUser = u));
   }
 
   ngOnInit() {
@@ -55,7 +60,7 @@ export class ProfilePublicComponent implements OnInit {
       error: (err) => {
         this.loading = false;
         this.error = err?.error?.message || 'Utilisateur introuvable';
-      }
+      },
     });
   }
 
