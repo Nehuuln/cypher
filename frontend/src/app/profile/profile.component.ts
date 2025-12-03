@@ -6,7 +6,6 @@ import { take } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { FormsModule } from '@angular/forms';
 
-
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -100,19 +99,20 @@ export class ProfileComponent implements OnInit {
     const oldPw = (this.form.oldPassword || '').toString();
     if (pw || pwConfirm) {
       if (!oldPw) {
-        this.error = 'Pour changer le mot de passe, renseignez l\'ancien mot de passe.';
+        this.error = "Pour changer le mot de passe, renseignez l'ancien mot de passe.";
         return;
       }
       if (!pw || !pwConfirm) {
-        this.error = 'Pour changer le mot de passe, renseignez les deux champs (nouveau + confirmation).';
+        this.error =
+          'Pour changer le mot de passe, renseignez les deux champs (nouveau + confirmation).';
         return;
       }
       if (pw !== pwConfirm) {
-        this.error = "Les mots de passe ne correspondent pas.";
+        this.error = 'Les mots de passe ne correspondent pas.';
         return;
       }
       if (pw.length > 0 && pw.length < 12) {
-        this.error = "Le mot de passe doit contenir au moins 12 caractères.";
+        this.error = 'Le mot de passe doit contenir au moins 12 caractères.';
         return;
       }
     }
@@ -121,15 +121,29 @@ export class ProfileComponent implements OnInit {
     const fd = new FormData();
     let changed = false;
 
-    if (this.form.username !== undefined && this.form.username !== null && String(this.form.username).trim() !== '' && String(this.form.username) !== (this.user?.username || '')) {
+    if (
+      this.form.username !== undefined &&
+      this.form.username !== null &&
+      String(this.form.username).trim() !== '' &&
+      String(this.form.username) !== (this.user?.username || '')
+    ) {
       fd.append('username', String(this.form.username).trim());
       changed = true;
     }
-    if (this.form.email !== undefined && this.form.email !== null && String(this.form.email).trim() !== '' && String(this.form.email).trim().toLowerCase() !== (this.user?.email || '').toLowerCase()) {
+    if (
+      this.form.email !== undefined &&
+      this.form.email !== null &&
+      String(this.form.email).trim() !== '' &&
+      String(this.form.email).trim().toLowerCase() !== (this.user?.email || '').toLowerCase()
+    ) {
       fd.append('email', String(this.form.email).trim());
       changed = true;
     }
-    if (this.form.bio !== undefined && this.form.bio !== null && String(this.form.bio) !== (this.user?.bio || '')) {
+    if (
+      this.form.bio !== undefined &&
+      this.form.bio !== null &&
+      String(this.form.bio) !== (this.user?.bio || '')
+    ) {
       fd.append('bio', String(this.form.bio));
       changed = true;
     }
@@ -169,7 +183,7 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.error = err?.error?.message || 'Erreur lors de la mise à jour';
         this.saving = false;
-      }
+      },
     });
   }
 
