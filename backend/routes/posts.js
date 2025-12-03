@@ -265,15 +265,44 @@ router.get("/:id/media", async (req, res) => {
 });
 
 // DELETE /api/posts/:id -> delete a post (admin only)
-router.delete('/:id', authMiddleware, authMiddleware.adminOnly, async (req, res) => {
+router.delete(
+  "/:id",
+  authMiddleware,
+  authMiddleware.adminOnly,
+  async (req, res) => {
+    try {
+      const postId = req.params.id;
+      const deleted = await Post.findByIdAndDelete(postId);
+      if (!deleted) return res.status(404).json({ message: "Post not found" });
+      return res.json({ message: "Post deleted" });
+    } catch (err) {
+      console.error("DELETE /api/posts/:id error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+// GET /api/posts/user/:id -> list posts by user
+router.get("/user/:id", async (req, res) => {
   try {
-    const postId = req.params.id;
-    const deleted = await Post.findByIdAndDelete(postId);
-    if (!deleted) return res.status(404).json({ message: 'Post not found' });
-    return res.json({ message: 'Post deleted' });
+    const { id } = req.params;
+    const posts = await Post.find({ author: id })
+      .select("-media.data")
+      .sort({ createdAt: -1 })
+      .populate("author", "username tag")
+      .populate("comments.author", "username tag")
+      .lean();
+
+    const out = posts.map((p) => ({
+      ...p,
+      likesCount: (p.likes || []).length,
+      likedByMe: false,
+    }));
+
+    return res.json({ posts: out });
   } catch (err) {
-    console.error('DELETE /api/posts/:id error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("GET /api/posts/user/:id error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 });
 
