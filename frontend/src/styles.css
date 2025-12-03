@@ -1573,3 +1573,11 @@ body {
     gap: 0;
   }
 }
+
+.delete-btn {
+  color: var(--text-secondary);
+}
+.delete-btn:hover {
+  color: #e02424;
+  background-color: rgba(224,36,36,0.06);
+}

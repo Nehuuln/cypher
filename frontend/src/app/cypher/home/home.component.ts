@@ -23,7 +23,12 @@ export class HomeComponent implements OnInit {
   currentUser: any = null;
   private baseUrl = 'https://localhost:3000';
 
-  constructor(private http: HttpClient, private router: Router, private auth: AuthService) {}
+  // delete modal state
+  deleteModalOpen = false;
+  deletingPost: any = null;
+  deleteLoading = false;
+
+  constructor(private http: HttpClient, private router: Router, public auth: AuthService) {}
 
   ngOnInit() {
     this.auth.currentUser$
@@ -134,7 +139,6 @@ export class HomeComponent implements OnInit {
   }
 
   openComments(post: any) {
-    // refresh comments for the post if needed (simple approach: ensure we use the same object)
     this.selectedPostForComments = post;
   }
 
@@ -157,5 +161,32 @@ export class HomeComponent implements OnInit {
   onAvatarError(ev: Event) {
     const img = ev.target as HTMLImageElement;
     img.style.display = 'none';
+  }
+
+  confirmDelete(post: any) {
+    this.deletingPost = post;
+    this.deleteModalOpen = true;
+  }
+
+  closeDeleteModal() {
+    this.deleteModalOpen = false;
+    this.deletingPost = null;
+    this.deleteLoading = false;
+  }
+
+  doDelete() {
+    if (!this.deletingPost) return;
+    const id = this.deletingPost._id;
+    this.deleteLoading = true;
+    this.http.delete<any>(`${this.baseUrl}/api/posts/${encodeURIComponent(id)}`, { withCredentials: true }).subscribe({
+      next: () => {
+        this.posts = this.posts.filter(p => String(p._id) !== String(id));
+        this.closeDeleteModal();
+      },
+      error: (err) => {
+        console.error('Delete post error', err);
+        this.deleteLoading = false;
+      }
+    });
   }
 }

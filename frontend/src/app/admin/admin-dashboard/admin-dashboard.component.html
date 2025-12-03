@@ -21,6 +21,13 @@
         <td>{{ u.roles?.join(', ') }}</td>
         <td>{{ u._id }}</td>
         <td>{{ u.tag }}</td>
+        <td>
+          <a [routerLink]="['/profil/user/tag', u.tag]" title="Voir le profil" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:inherit">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16zm0-6a2 2 0 1 0 .001 4.001A2 2 0 0 0 12 10z"/>
+            </svg>
+          </a>
+        </td>
       </tr>
     </tbody>
   </table>

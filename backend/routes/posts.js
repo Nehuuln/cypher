@@ -263,4 +263,18 @@ router.get("/:id/media", async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+// DELETE /api/posts/:id -> delete a post (admin only)
+router.delete('/:id', authMiddleware, authMiddleware.adminOnly, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const deleted = await Post.findByIdAndDelete(postId);
+    if (!deleted) return res.status(404).json({ message: 'Post not found' });
+    return res.json({ message: 'Post deleted' });
+  } catch (err) {
+    console.error('DELETE /api/posts/:id error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
