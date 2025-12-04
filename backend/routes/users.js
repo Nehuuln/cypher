@@ -6,7 +6,6 @@ const multer = require("multer");
 const { fileTypeFromBuffer } = require("file-type");
 const { v4: uuidv4 } = require("uuid");
 
-// petit utilitaire d'échappement HTML pour prévenir le stored XSS
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -15,6 +14,15 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;")
     .replace(/\//g, "&#x2F;");
+}
+
+function sanitizeFilename(name) {
+  try {
+    const s = String(name || 'avatar');
+    return s.replace(/[\r\n\"]/g, '_').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200) || 'avatar';
+  } catch (e) {
+    return 'avatar';
+  }
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,12 +73,14 @@ router.get("/:id/avatar", async (req, res) => {
       return res.status(500).json({ message: "Invalid avatar data" });
     }
 
-    res.set("Content-Type", user.avatar.contentType || "application/octet-stream");
-    res.set(
-      "Content-Disposition",
-      `inline; filename="${user.avatar.filename || "avatar"}"`
-    );
-    res.set("Content-Length", String(buf.length));
+    const detected = await fileTypeFromBuffer(buf);
+    const contentType = (detected && detected.mime) || user.avatar.contentType || "application/octet-stream";
+    const filename = sanitizeFilename(user.avatar.filename || 'avatar');
+
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Content-Type', contentType);
+    res.set('Content-Disposition', `inline; filename="${filename}"`);
+    res.set('Content-Length', String(buf.length));
     return res.send(buf);
   } catch (err) {
     console.error("GET /api/users/:id/avatar error:", err);
