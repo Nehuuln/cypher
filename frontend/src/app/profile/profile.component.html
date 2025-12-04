@@ -1,18 +1,130 @@
-<div class="profile">
-  <h2>Profil</h2>
-  <div *ngIf="loading">Chargement...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-  <div *ngIf="!loading && user">
-    <div *ngIf="avatarUrl"><img [src]="avatarUrl" alt="Avatar" style="max-width:150px;max-height:150px;border-radius:8px" /></div>
-    <p><strong>Tag:</strong> @{{ user.tag }}</p>
-    <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Roles:</strong> {{ user.roles?.join(', ') }}</p>
-
-    <div>
-      <label>Changer avatar</label>
-      <input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onFileSelected($event)" />
-      <button (click)="uploadAvatar()" [disabled]="!selectedFile">Upload</button>
+<div class="profile-page">
+  <div class="profile-header-bar">
+    <div class="back-button" onclick="history.back()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path
+          d="M7.414 13l5.043 5.04-1.414 1.42L3.586 12l7.457-7.46 1.414 1.42L7.414 11H21v2H7.414z"
+        ></path>
+      </svg>
     </div>
+    <div class="header-info">
+      <h2>Éditer le profil</h2>
+    </div>
+    <button class="save-header-btn" (click)="saveProfile()" [disabled]="saving">
+      {{ saving ? '...' : 'Enregistrer' }}
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-msg">Chargement des infos...</div>
+  <div *ngIf="error" class="error-msg">{{ error }}</div>
+
+  <div class="settings-container" *ngIf="!loading && user">
+    <form (ngSubmit)="saveProfile()">
+      <div class="edit-media-section">
+        <div class="edit-avatar-wrapper" (click)="fileInput.click()">
+          <img
+            [src]="avatarUrl || 'assets/default-avatar.png'"
+            class="edit-avatar-img"
+            (error)="$event.target.style.display = 'none'"
+          />
+
+          <div class="avatar-overlay">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+              <path
+                d="M19.708 22H4.292C3.028 22 2 20.972 2 19.708V7.292C2 6.028 3.028 5 4.292 5H8.15l.394-1.18c.319-.958 1.216-1.602 2.225-1.602h2.462c1.01 0 1.906.644 2.225 1.602L15.85 5h3.858C20.972 5 22 6.028 22 7.292v12.416C22 20.972 20.972 22 19.708 22zM8.94 5l-.656 1.97h-4V19.71h15.432V6.97h-4l-.656-1.97H8.94zM12 18c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"
+              ></path>
+            </svg>
+          </div>
+
+          <input
+            #fileInput
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-group disabled-group">
+          <label>Identifiant (Tag)</label>
+          <input class="form-input" type="text" [value]="'@' + user.tag" disabled />
+          <small class="helper-text">Votre identifiant unique ne peut pas être modifié.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Nom d'affichage</label>
+          <input
+            class="form-input"
+            type="text"
+            [(ngModel)]="form.username"
+            name="username"
+            placeholder="Comment doit-on vous appeler ?"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Biographie</label>
+          <textarea
+            class="form-input"
+            [(ngModel)]="form.bio"
+            name="bio"
+            rows="3"
+            placeholder="Parlez-nous de vous..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <h3 class="section-title">Informations privées</h3>
+
+        <div class="form-group">
+          <label>Adresse Email</label>
+          <input class="form-input" type="email" [(ngModel)]="form.email" name="email" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <h3 class="section-title">Mot de passe</h3>
+        <p class="section-subtitle">
+          Remplissez ces champs uniquement si vous souhaitez changer de mot de passe.
+        </p>
+
+        <div class="form-group">
+          <label>Mot de passe actuel</label>
+          <input
+            class="form-input"
+            type="password"
+            [(ngModel)]="form.oldPassword"
+            name="oldPassword"
+            placeholder="Obligatoire pour confirmer le changement"
+          />
+        </div>
+
+        <div class="password-grid">
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input class="form-input" type="password" [(ngModel)]="form.password" name="password" />
+          </div>
+
+          <div class="form-group">
+            <label>Confirmer</label>
+            <input
+              class="form-input"
+              type="password"
+              [(ngModel)]="form.passwordConfirm"
+              name="passwordConfirm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 100px"></div>
+    </form>
   </div>
 </div>

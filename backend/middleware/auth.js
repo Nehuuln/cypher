@@ -4,8 +4,13 @@ const mongoose = require('mongoose');
 // Verify token from cookie and implement sliding expiration
 function authMiddleware(req, res, next) {
   try {
-    const token = req.cookies && req.cookies.token;
-    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+    // debug: log presence of cookie/header
+    console.debug('authMiddleware: cookies=', req.cookies, 'auth header=', req.headers.authorization);
+    const token = req.cookies?.token || (req.headers.authorization ? req.headers.authorization.replace(/^Bearer\s+/i,'') : null);
+    if (!token) {
+      console.debug('authMiddleware: no token found -> 401');
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
     const secret = process.env.JWT_SECRET || 'dev-secret';
     const parts = token.split('.');
@@ -42,12 +47,12 @@ function authMiddleware(req, res, next) {
     const newSig = crypto.createHmac('sha256', secret).update(newBase).digest('base64url');
     const newToken = `${newBase}.${newSig}`;
 
-    // set refreshed cookie (30 minutes default or env)
+    // set refreshed cookie (uses same attributes as login)
     const sessionMinutes = parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 30;
     res.cookie('token', newToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: sessionMinutes * 60 * 1000
     });
@@ -56,7 +61,7 @@ function authMiddleware(req, res, next) {
     req.user = payload;
     next();
   } catch (err) {
-    console.error('Auth middleware error:', err);
+    console.error('authMiddleware error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
