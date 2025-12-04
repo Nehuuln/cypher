@@ -12,6 +12,16 @@ const mongoose = require('mongoose');
 
 ffmpeg.setFfprobePath(ffprobeStatic.path);
 
+// sanitize a filename to avoid header injection and unsafe chars
+function sanitizeFilename(name) {
+  try {
+    const s = String(name || 'media');
+    return s.replace(/[\r\n\"]/g, '_').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200) || 'media';
+  } catch (e) {
+    return 'media';
+  }
+}
+
 const Post = require("../models/Post");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/auth");
@@ -135,8 +145,13 @@ router.post("/:id/like", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ message: 'Invalid post id' });
+    }
+    const postObjectId = mongoose.Types.ObjectId(postId);
+
     const updated = await Post.findByIdAndUpdate(
-      postId,
+      postObjectId,
       { $addToSet: { likes: userId } },
       { new: true }
     )
@@ -155,8 +170,13 @@ router.post("/:id/unlike", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ message: 'Invalid post id' });
+    }
+    const postObjectId = mongoose.Types.ObjectId(postId);
+
     const updated = await Post.findByIdAndUpdate(
-      postId,
+      postObjectId,
       { $pull: { likes: userId } },
       { new: true }
     )
@@ -175,13 +195,17 @@ router.post("/:id/comment", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ message: 'Invalid post id' });
+    }
+    const postObjectId = mongoose.Types.ObjectId(postId);
     const text = (req.body.text || "").toString().trim();
     if (!text)
       return res.status(400).json({ message: "Comment text required" });
 
     const comment = { author: userId, text, createdAt: new Date() };
     const updated = await Post.findByIdAndUpdate(
-      postId,
+      postObjectId,
       { $push: { comments: comment } },
       { new: true }
     )
@@ -201,7 +225,11 @@ router.post("/:id/comment", authMiddleware, async (req, res) => {
 router.get("/:id/media", async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await Post.findById(id).select("media").lean();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid post id' });
+    }
+    const postId = mongoose.Types.ObjectId(id);
+    const post = await Post.findById(postId).select("media").lean();
     if (!post || !post.media || !post.media.data)
       return res.status(404).json({ message: "Media not found" });
 
@@ -234,12 +262,14 @@ router.get("/:id/media", async (req, res) => {
     }
 
     const total = dataBuf.length;
-    const contentType = md.contentType || "application/octet-stream";
+    // prefer detected mime from buffer
+    const detected = await fileTypeFromBuffer(dataBuf);
+    const contentType = (detected && detected.mime) || md.contentType || "application/octet-stream";
+    const filename = sanitizeFilename(md.filename || 'media');
+
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader("Content-Type", contentType);
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename="${md.filename || "media"}"`
-    );
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Accept-Ranges", "bytes");
 
     const range = req.headers.range;
@@ -273,7 +303,11 @@ router.delete(
   async (req, res) => {
     try {
       const postId = req.params.id;
-      const deleted = await Post.findByIdAndDelete(postId);
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        return res.status(400).json({ message: 'Invalid post id' });
+      }
+      const postObjectId = mongoose.Types.ObjectId(postId);
+      const deleted = await Post.findByIdAndDelete(postObjectId);
       if (!deleted) return res.status(404).json({ message: "Post not found" });
       return res.json({ message: "Post deleted" });
     } catch (err) {

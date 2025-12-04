@@ -101,7 +101,16 @@ router.post("/login", async (req, res) => {
       roles: user.roles,
       iat: Math.floor(Date.now() / 1000),
     };
-    const secret = process.env.JWT_SECRET || "dev-secret";
+    let secret = process.env.JWT_SECRET;
+    if (!secret) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: JWT_SECRET is not set in production environment');
+        return res.status(500).json({ message: 'Server misconfiguration' });
+      }
+      console.warn('JWT_SECRET not set, using development fallback (insecure)');
+      secret = 'dev-secret';
+    }
+
     const base = Buffer.from(JSON.stringify(payload)).toString("base64url");
     const sig = crypto
       .createHmac("sha256", secret)
