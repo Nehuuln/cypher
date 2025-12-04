@@ -5,6 +5,7 @@ const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const { fileTypeFromBuffer } = require("file-type");
 const { v4: uuidv4 } = require("uuid");
+const mongoose = require('mongoose');
 
 function escapeHtml(str) {
   return String(str)
@@ -40,7 +41,11 @@ router.get(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const user = await User.findById(id).select("-password");
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid user id' });
+      }
+      const userId = mongoose.Types.ObjectId(id);
+      const user = await User.findById(userId).select("-password");
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.json({ user });
     } catch (err) {
@@ -53,7 +58,11 @@ router.get(
 router.get("/:id/avatar", async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id).select("avatar").lean();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid user id' });
+    }
+    const userId = mongoose.Types.ObjectId(id);
+    const user = await User.findById(userId).select("avatar").lean();
     if (!user || !user.avatar || !user.avatar.data) {
       return res.status(404).json({ message: "Avatar not found" });
     }
@@ -97,40 +106,39 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid user id' });
+      }
+      const userId = mongoose.Types.ObjectId(id);
       const updates = {};
 
-      // tag is not editable
       if (req.body.tag !== undefined) {
         return res.status(400).json({ message: "Tag cannot be modified." });
       }
 
-      // username validation & uniqueness
       if (req.body.username !== undefined) {
         if (typeof req.body.username !== "string" || req.body.username.trim().length < 3) {
           return res.status(400).json({ message: "Username invalide (min 3 caractères)." });
         }
         const usernameTrim = req.body.username.trim();
-        const exists = await User.findOne({ username: usernameTrim, _id: { $ne: id } }).lean();
+        const exists = await User.findOne({ username: usernameTrim, _id: { $ne: userId } }).lean();
         if (exists) return res.status(409).json({ message: "Username déjà utilisé." });
         updates.username = usernameTrim;
       }
 
-      // email validation & uniqueness
       if (req.body.email !== undefined) {
         if (typeof req.body.email !== "string" || !emailRegex.test(req.body.email)) {
           return res.status(400).json({ message: "Email invalide." });
         }
         const emailNorm = req.body.email.toLowerCase().trim();
-        const exists = await User.findOne({ email: emailNorm, _id: { $ne: id } }).lean();
+        const exists = await User.findOne({ email: emailNorm, _id: { $ne: userId } }).lean();
         if (exists) return res.status(409).json({ message: "Email déjà utilisé." });
         updates.email = emailNorm;
       }
 
-      // password (optional) -> require oldPassword (unless admin), validate minimal policy then hash
       if (req.body.password !== undefined && req.body.password !== "") {
         const pw = String(req.body.password);
 
-        // check old password provided unless admin
         const requesterRoles = Array.isArray(req.user?.roles) ? req.user.roles : [];
         const isAdmin = requesterRoles.some(r => String(r).toLowerCase() === 'admin' || String(r).toLowerCase() === 'administrator');
 
@@ -138,8 +146,7 @@ router.put(
           if (!req.body.oldPassword) {
             return res.status(400).json({ message: 'Ancien mot de passe requis pour changer le mot de passe.' });
           }
-          // verify old password
-          const existing = await User.findById(id).select('password').lean();
+          const existing = await User.findById(userId).select('password').lean();
           if (!existing) return res.status(404).json({ message: 'User not found' });
           const bcrypt = require('bcryptjs');
           const ok = await bcrypt.compare(String(req.body.oldPassword), existing.password);
@@ -151,7 +158,6 @@ router.put(
         if (pw.length < 12) {
           return res.status(400).json({ message: "Le mot de passe doit contenir au moins 12 caractères." });
         }
-        // simple complexity check (client already enforces); server-side minimal check
         let classes = 0;
         if (/[A-Z]/.test(pw)) classes++;
         if (/[a-z]/.test(pw)) classes++;
@@ -164,14 +170,13 @@ router.put(
         updates.password = hashed;
       }
 
-      // bio -> sanitize / escape
       if (req.body.bio !== undefined) {
         if (typeof req.body.bio !== "string") return res.status(400).json({ message: "Bio invalide." });
         if (req.body.bio.length > 1000) return res.status(400).json({ message: "Bio trop longue (max 1000 caractères)." });
         updates.bio = escapeHtml(req.body.bio);
       }
 
-      // avatar file (optional)
+      // avatar file 
       if (req.file) {
         const ft = await fileTypeFromBuffer(req.file.buffer);
         const allowedMime = ["image/jpeg", "image/png"];
@@ -188,7 +193,7 @@ router.put(
         };
       }
 
-      const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password").lean();
+      const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select("-password").lean();
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.json({ user });
     } catch (err) {

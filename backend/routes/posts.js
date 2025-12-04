@@ -8,6 +8,7 @@ const os = require("os");
 const path = require("path");
 const ffprobeStatic = require("ffprobe-static");
 const ffmpeg = require("fluent-ffmpeg");
+const mongoose = require('mongoose');
 
 ffmpeg.setFfprobePath(ffprobeStatic.path);
 
@@ -286,7 +287,12 @@ router.delete(
 router.get("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const posts = await Post.find({ author: id })
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid user id' });
+    }
+    const authorId = mongoose.Types.ObjectId(id);
+
+    const posts = await Post.find({ author: authorId })
       .select("-media.data")
       .sort({ createdAt: -1 })
       .populate("author", "username tag")
