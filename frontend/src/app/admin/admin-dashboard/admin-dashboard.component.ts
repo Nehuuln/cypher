@@ -32,4 +32,23 @@ export class AdminDashboardComponent {
       },
     });
   }
+
+  toggleRole(u: any) {
+    const nextRole = (u.roles || []).includes('admin') ? 'user' : 'admin';
+    this.changeRole(u, nextRole);
+  }
+
+  changeRole(u: any, role: string) {
+    if (!role) return;
+    this.http
+      .patch<any>(`${this.baseUrl}/api/admin/users/${u._id}/role`, { role }, { withCredentials: true })
+      .subscribe({
+        next: (res) => {
+          u.roles = res.user?.roles || u.roles;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Erreur';
+        },
+      });
+  }
 }

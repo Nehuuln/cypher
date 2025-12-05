@@ -35,7 +35,7 @@
           </td>
 
           <td>
-            <div class="roles-wrapper">
+            <div class="roles-wrapper" role="button" tabindex="0" title="Cliquer pour basculer admin/user" (click)="toggleRole(u)">
               <span
                 *ngFor="let role of u.roles"
                 class="role-badge"
