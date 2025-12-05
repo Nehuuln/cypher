@@ -15,6 +15,7 @@
           <th>Contact</th>
           <th>ID Technique</th>
           <th>Action</th>
+          <th>Ban</th>
         </tr>
       </thead>
       <tbody>
@@ -62,6 +63,18 @@
                 />
               </svg>
             </a>
+
+          </td>
+
+          <td>
+            <button
+              *ngIf="!(u.roles || []).includes('admin')"
+              class="action-btn outline"
+              style="padding:8px 12px;font-size:12px;"
+              (click)="openBanModal(u)"
+            >
+              {{ isBanned(u) ? 'Lever ban' : 'Bannir' }}
+            </button>
           </td>
         </tr>
       </tbody>
@@ -69,4 +82,28 @@
   </div>
 
   <div *ngIf="!loading && users.length === 0" class="empty-state">Aucun utilisateur trouvé.</div>
+</div>
+
+<!-- Modal Ban -->
+<div *ngIf="banModalOpen" class="modal-overlay ban-modal" (click)="closeBanModal()">
+  <div class="modal ban-modal-content" (click)="$event.stopPropagation()">
+    <h3>Bannir un utilisateur</h3>
+    <p *ngIf="banTarget">Cible : <strong>{{ banTarget.username }}</strong> (@{{ banTarget.tag }})</p>
+
+    <div class="ban-form">
+      <label>Durée (minutes, 0 pour lever le ban)</label>
+      <input type="number" min="0" [(ngModel)]="banMinutes" />
+      <label>Raison (optionnelle)</label>
+      <textarea [(ngModel)]="banReason" rows="3"></textarea>
+    </div>
+
+    <div *ngIf="banError" class="error-msg ban-error">{{ banError }}</div>
+
+    <div class="ban-actions">
+      <button class="btn-secondary" (click)="closeBanModal()" [disabled]="banLoading">Annuler</button>
+      <button class="btn-primary" (click)="submitBan()" [disabled]="banLoading">
+        {{ banLoading ? 'En cours...' : 'Valider' }}
+      </button>
+    </div>
+  </div>
 </div>

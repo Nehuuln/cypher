@@ -90,4 +90,48 @@ router.patch(
   }
 );
 
+// /api/admin/users/:id/ban - bannir un utilisateur
+router.patch(
+  "/users/:id/ban",
+  authMiddleware,
+  authMiddleware.adminOnly,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { durationMinutes, reason } = req.body;
+
+      if (!id) return res.status(400).json({ message: "ID manquant" });
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "ID invalide" });
+      }
+
+      const user = await User.findById(id);
+      if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+
+      const isTargetAdmin = Array.isArray(user.roles) && user.roles.some(r => String(r).toLowerCase() === 'admin');
+      if (isTargetAdmin) return res.status(403).json({ message: "Impossible de bannir un admin." });
+
+      const minutes = Number(durationMinutes);
+      if (Number.isNaN(minutes) || minutes < 0) {
+        return res.status(400).json({ message: "Durée invalide" });
+      }
+
+      if (minutes === 0) {
+        user.bannedUntil = null;
+        user.bannedReason = "";
+      } else {
+        user.bannedUntil = new Date(Date.now() + minutes * 60 * 1000);
+        user.bannedReason = String(reason || "");
+      }
+
+      await user.save();
+      const sanitized = await User.findById(user._id).select("-password");
+      return res.json({ user: sanitized });
+    } catch (err) {
+      console.error("PATCH /api/admin/users/:id/ban error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
 module.exports = router;
