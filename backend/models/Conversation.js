@@ -20,6 +20,11 @@ const conversationSchema = new mongoose.Schema({
   messages: [messageSchema],
   lastMessageAt: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now }
+  ,
+  // status: 'pending' when a requester starts a conversation and waits for acceptance
+  status: { type: String, enum: ['pending', 'active', 'rejected'], default: 'active' },
+  // who initiated the request (useful when status === 'pending')
+  requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
 module.exports = mongoose.model('Conversation', conversationSchema);

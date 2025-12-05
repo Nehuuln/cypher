@@ -132,8 +132,29 @@
         </div>
       </div>
 
+      <!-- Status banner: pending / rejected -->
+      <div *ngIf="activeConv?.status && activeConv.status !== 'active'" class="conv-status-banner">
+        <div style="padding:10px; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <strong>Status:</strong>
+            <span *ngIf="activeConv.status === 'pending'">En attente d'acceptation</span>
+            <span *ngIf="activeConv.status === 'rejected'">Demande refusée</span>
+          </div>
+          <div *ngIf="activeConv.status === 'pending'">
+            <button *ngIf="currentUser && activeConv.requester && (currentUser._id !== activeConv.requester)" class="btn-secondary" (click)="rejectActiveConversation()">Refuser</button>
+            <button *ngIf="currentUser && activeConv.requester && (currentUser._id !== activeConv.requester)" class="btn-primary" (click)="acceptActiveConversation()">Accepter</button>
+            <span *ngIf="currentUser && activeConv.requester && (currentUser._id === activeConv.requester)">En attente de la réponse de l'autre utilisateur...</span>
+          </div>
+        </div>
+      </div>
+
       <div class="input-area">
-        <app-message-input (send)="onSendFromInput($event)"></app-message-input>
+        <ng-container *ngIf="!activeConv?.status || activeConv.status === 'active'; else blockedInput">
+          <app-message-input (send)="onSendFromInput($event)"></app-message-input>
+        </ng-container>
+        <ng-template #blockedInput>
+          <div style="padding:12px; color:var(--text-muted);">Vous ne pouvez pas envoyer de message tant que la conversation n'est pas acceptée.</div>
+        </ng-template>
       </div>
     </div>
   </div>
@@ -149,5 +170,19 @@
     </div>
     <div *ngIf="startError" class="error-msg" style="margin-top:8px">{{ startError }}</div>
     <div class="actions" style="margin-top:12px;text-align:right"><button class="btn-secondary" (click)="closeStartModal()">Annuler</button></div>
+  </div>
+</div>
+
+<div *ngIf="incomingRequest" class="start-modal-overlay" (click)="incomingRequest = null">
+  <div class="start-modal" (click)="$event.stopPropagation()">
+    <h3>Demande de conversation</h3>
+    <p>
+      <strong>{{ incomingRequest.requester?.username || 'Un utilisateur' }}</strong>
+      souhaite discuter avec vous. Accepter ?
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+      <button class="btn-secondary" (click)="rejectIncoming()">Refuser</button>
+      <button class="btn-primary" (click)="acceptIncoming()">Accepter</button>
+    </div>
   </div>
 </div>
