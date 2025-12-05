@@ -105,7 +105,7 @@ router.post("/login", async (req, res) => {
       roles: user.roles,
       username: user.username,
       tag: user.tag,
-      iat: Math.floor(Date.now() / 1000) // ajout pour expiration glissante
+      iat: Math.floor(Date.now() / 1000) 
     };
     let secret = process.env.JWT_SECRET;
     if (!secret) {
