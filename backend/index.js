@@ -127,8 +127,12 @@ mongoose
       app.set("io", io);
 
       io.on("connection", (socket) => {
+        console.log('Socket connected:', socket.id);
         socket.on("identify", (userId) => {
-          if (userId) socket.join(String(userId));
+          if (userId) {
+            socket.join(String(userId));
+            console.log('Socket', socket.id, 'joined room', String(userId));
+          }
         });
       });
 

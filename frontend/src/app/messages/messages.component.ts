@@ -17,12 +17,14 @@ export class MessagesComponent implements OnInit {
   activeConv: any = null;
   currentUser: any = null;
   loading = false;
+  incomingRequest: any = null;
   // start conversation modal state
   showStartModal = false;
   startTag: string = '';
   startError: string | null = null;
   startLoading = false;
   private baseUrl = 'https://localhost:3000';
+  private _reqSub: any = null;
 
   constructor(private svc: MessagesService, private auth: AuthService) {}
 
@@ -40,6 +42,31 @@ export class MessagesComponent implements OnInit {
         this.loadConversations();
       }
     });
+
+    // listen for incoming conversation requests
+    this._reqSub = this.svc.requests$.subscribe(req => {
+      if (req) {
+        this.incomingRequest = req;
+      }
+    });
+
+    // handle accept/reject notifications
+    this.svc.updates$.subscribe((u: any) => {
+      if (!u) return;
+      if (u.type === 'conversation:accepted') {
+        const id = u.data?.conversationId;
+        if (id) {
+          this.loadConversations();
+          this.openConversation(id);
+        }
+      } else if (u.type === 'conversation:rejected') {
+        this.loadConversations();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this._reqSub) this._reqSub.unsubscribe();
   }
 
   private getEntityId(entity: any): string | null {
@@ -105,9 +132,67 @@ export class MessagesComponent implements OnInit {
   onSendFromInput(ev: any) {
     const { text, files } = ev;
     if (!this.activeConv) return;
+    // prevent sending if conversation is not active (server returns 403)
+    if (this.activeConv.status && this.activeConv.status !== 'active') {
+      // show a simple alert; you can replace with a toast notification
+      alert('La conversation n\'est pas active. Attendez que l\'autre utilisateur accepte la demande.');
+      return;
+    }
+
     this.svc.sendMessage(this.activeConv._id, text, files).subscribe(() => {
       this.loadActiveConversation(this.activeConv._id);
       this.loadConversations();
+    });
+  }
+
+  // accept/reject when viewing the active conversation (if it's pending)
+  acceptActiveConversation() {
+    if (!this.activeConv || !this.activeConv._id) return;
+    this.svc.acceptConversation(this.activeConv._id).subscribe({
+      next: (res) => {
+        this.loadConversations();
+        if (res && res.conversationId) this.openConversation(res.conversationId);
+      },
+      error: (err) => console.error('Accept active error', err)
+    });
+  }
+
+  rejectActiveConversation() {
+    if (!this.activeConv || !this.activeConv._id) return;
+    this.svc.rejectConversation(this.activeConv._id).subscribe({
+      next: () => {
+        this.loadConversations();
+        this.activeConv = null;
+      },
+      error: (err) => console.error('Reject active error', err)
+    });
+  }
+
+  acceptIncoming() {
+    if (!this.incomingRequest) return;
+    const convId = this.incomingRequest.conversationId;
+    this.svc.acceptConversation(convId).subscribe({
+      next: (res) => {
+        this.incomingRequest = null;
+        this.loadConversations();
+        if (res && res.conversationId) this.openConversation(res.conversationId);
+      },
+      error: (err) => {
+        console.error('Accept error', err);
+      }
+    });
+  }
+
+  rejectIncoming() {
+    if (!this.incomingRequest) return;
+    const convId = this.incomingRequest.conversationId;
+    this.svc.rejectConversation(convId).subscribe({
+      next: () => {
+        this.incomingRequest = null;
+      },
+      error: (err) => {
+        console.error('Reject error', err);
+      }
     });
   }
 
