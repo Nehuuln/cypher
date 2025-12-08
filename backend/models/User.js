@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema({
     size: Number
   },
 
-  tag: { type: String, required: true, unique: true, index: true }
+  tag: { type: String, required: true, unique: true, index: true },
+
+  bannedUntil: { type: Date, default: null },
+  bannedReason: { type: String, default: "" }
 });
 
 module.exports = mongoose.model("User", userSchema);

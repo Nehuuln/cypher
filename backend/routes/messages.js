@@ -74,15 +74,98 @@ router.post('/start', authMiddleware, async (req, res) => {
     if (!other) return res.status(404).json({ message: 'User not found (by tag)' });
     if (String(other._id) === String(me)) return res.status(400).json({ message: 'Cannot start conversation with yourself' });
 
+    // try find existing conversation between the two users
     let conv = await Conversation.findOne({ participants: { $all: [me, other._id], $size: 2 } });
     if (!conv) {
-      conv = new Conversation({ participants: [me, other._id], messages: [] });
+      // create as pending so the other user can accept or reject
+      conv = new Conversation({ participants: [me, other._id], messages: [], status: 'pending', requester: me });
+      await conv.save();
+    } else {
+      // if existing and active -> return it
+      if (conv.status === 'active') return res.status(200).json({ conversationId: conv._id, status: 'active' });
+      // if pending -> keep pending
+      if (conv.status === 'pending') return res.status(200).json({ conversationId: conv._id, status: 'pending' });
+      // if rejected -> recreate as pending
+      conv.status = 'pending';
+      conv.requester = me;
       await conv.save();
     }
-    return res.status(201).json({ conversationId: conv._id });
+
+    // notify the other user via socket if possible
+    try {
+      const io = req.app.get('io');
+      const payload = {
+        conversationId: conv._id,
+        requester: { _id: me, username: req.user.username }
+      };
+      if (io) {
+        io.to(String(other._id)).emit('conversation:request', payload);
+        console.log('Emitted conversation:request to', String(other._id), 'payload=', payload);
+      } else {
+        console.log('No io instance available on app to emit conversation:request');
+      }
+    } catch (e) {
+      console.warn('Socket notify error', e);
+    }
+
+    return res.status(201).json({ conversationId: conv._id, status: 'pending' });
   } catch (err) {
     console.error('POST /api/messages/start error:', err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/messages/:id/accept -> accept a pending conversation
+router.post('/:id/accept', authMiddleware, async (req, res) => {
+  try {
+    const me = req.user.id;
+    const conv = await Conversation.findById(req.params.id);
+    if (!conv) return res.status(404).json({ message: 'Conversation not found' });
+    if (!conv.participants.some(p => String(p) === String(me))) return res.status(403).json({ message: 'Forbidden' });
+    if (conv.status !== 'pending') return res.status(400).json({ message: 'Conversation not pending' });
+    if (String(conv.requester) === String(me)) return res.status(400).json({ message: 'Requester cannot accept' });
+
+    conv.status = 'active';
+    await conv.save();
+
+    try {
+      const io = req.app.get('io');
+      if (io && conv.requester) {
+        io.to(String(conv.requester)).emit('conversation:accepted', { conversationId: conv._id });
+      }
+    } catch (e) { console.warn('Socket notify error', e); }
+
+    return res.json({ conversationId: conv._id, status: 'active' });
+  } catch (err) {
+    console.error('POST /api/messages/:id/accept error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/messages/:id/reject -> reject a pending conversation
+router.post('/:id/reject', authMiddleware, async (req, res) => {
+  try {
+    const me = req.user.id;
+    const conv = await Conversation.findById(req.params.id);
+    if (!conv) return res.status(404).json({ message: 'Conversation not found' });
+    if (!conv.participants.some(p => String(p) === String(me))) return res.status(403).json({ message: 'Forbidden' });
+    if (conv.status !== 'pending') return res.status(400).json({ message: 'Conversation not pending' });
+    if (String(conv.requester) === String(me)) return res.status(400).json({ message: 'Requester cannot reject' });
+
+    conv.status = 'rejected';
+    await conv.save();
+
+    try {
+      const io = req.app.get('io');
+      if (io && conv.requester) {
+        io.to(String(conv.requester)).emit('conversation:rejected', { conversationId: conv._id });
+      }
+    } catch (e) { console.warn('Socket notify error', e); }
+
+    return res.json({ message: 'Conversation rejected' });
+  } catch (err) {
+    console.error('POST /api/messages/:id/reject error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -107,6 +190,7 @@ router.post('/:id', authMiddleware, ensureParticipant, upload.array('attachments
     const me = req.user.id;
     const conv = await Conversation.findById(req.params.id);
     if (!conv) return res.status(404).json({ message: 'Conversation not found' });
+    if (conv.status !== 'active') return res.status(403).json({ message: 'Conversation not active' });
 
     const text = typeof req.body.text === 'string' ? req.body.text.trim() : '';
     const attachments = [];

@@ -96,10 +96,16 @@ router.post("/login", async (req, res) => {
     if (!valid)
       return res.status(401).json({ message: "Identifiants invalides" });
 
+    if (user.bannedUntil && user.bannedUntil > new Date()) {
+      const minutesLeft = Math.ceil((user.bannedUntil.getTime() - Date.now()) / 60000);
+      return res.status(403).json({ message: `Compte banni pour encore ${minutesLeft} min.` });
+    }
     const payload = {
       id: user._id.toString(),
       roles: user.roles,
-      iat: Math.floor(Date.now() / 1000),
+      username: user.username,
+      tag: user.tag,
+      iat: Math.floor(Date.now() / 1000) 
     };
     let secret = process.env.JWT_SECRET;
     if (!secret) {

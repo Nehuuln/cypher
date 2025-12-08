@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, switchMap, catchError, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,9 +14,13 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
-    return this.http
-      .post<any>(`${this.baseUrl}/api/login`, { email, password }, { withCredentials: true })
+    // Clear any stale/banned session before logging in
+    return this.logout()
+      .pipe(catchError(() => of(null)))
       .pipe(
+        switchMap(() =>
+          this.http.post<any>(`${this.baseUrl}/api/login`, { email, password }, { withCredentials: true })
+        ),
         tap(() => {
           // after successful login, refresh current user
           this.me().subscribe({

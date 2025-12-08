@@ -1,8 +1,9 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const User = require('../models/User');
 
 // Verify token from cookie and implement sliding expiration
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   try {
     // debug: log presence of cookie/header
     console.debug('authMiddleware: cookies=', req.cookies, 'auth header=', req.headers.authorization);
@@ -59,7 +60,19 @@ function authMiddleware(req, res, next) {
 
     // attach user info to request for downstream handlers
     req.user = payload;
-    next();
+    req.token = token;
+
+    const dbUser = await User.findById(payload.id).select('roles bannedUntil username tag').lean();
+    if (!dbUser) return res.status(401).json({ message: 'Unauthorized' });
+    if (dbUser.bannedUntil && dbUser.bannedUntil > new Date()) {
+      res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None", path: "/" });
+      return res.status(403).json({ message: "Compte banni temporairement." });
+    }
+
+    req.user.roles = dbUser.roles;
+    req.user.username = dbUser.username;
+    req.user.tag = dbUser.tag;
+    return next();
   } catch (err) {
     console.error('authMiddleware error:', err);
     return res.status(500).json({ message: 'Server error' });

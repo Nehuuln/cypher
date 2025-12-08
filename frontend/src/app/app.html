@@ -8,12 +8,12 @@
       <a href="/" class="nav-item">
         <span>Accueil</span>
       </a>
-      <a href="/messages" class="nav-item">
+      <a href="/messages" class="nav-item" *ngIf="username">
         <span>Message</span>
       </a>
 
       <a href="/admin/dashboard" *ngIf="isAdmin" class="nav-item">
-        <span>Admin</span>
+        <span>Dashboard</span>
       </a>
     </nav>
 
